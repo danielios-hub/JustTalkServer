@@ -10,5 +10,6 @@ func routes(_ app: Application) throws {
         return "Hello, world!"
     }
 
-    try app.register(collection: TodoController())
+    let phonesController = PhonesController()
+    try app.register(collection: phonesController)
 }

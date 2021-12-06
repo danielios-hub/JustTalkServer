@@ -7,16 +7,31 @@ public func configure(_ app: Application) throws {
     // uncomment to serve files from /Public folder
     // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
 
+    let dabasePort: Int = app.environment == .testing ? 5433 : 5432
+    let databaseName: String = app.environment == .testing ? "justtalktest_database" : "justtalk_database"
+    
     app.databases.use(.postgres(
         hostname: Environment.get("DATABASE_HOST") ?? "localhost",
-        port: Environment.get("DATABASE_PORT").flatMap(Int.init(_:)) ?? PostgresConfiguration.ianaPortNumber,
+        port: dabasePort,
         username: Environment.get("DATABASE_USERNAME") ?? "vapor_username",
         password: Environment.get("DATABASE_PASSWORD") ?? "vapor_password",
-        database: Environment.get("DATABASE_NAME") ?? "vapor_database"
+        database: Environment.get("DATABASE_NAME") ?? databaseName
     ), as: .psql)
 
-    app.migrations.add(CreateTodo())
+    app.migrations.add(CreatePhone())
+    app.logger.logLevel = .debug
+    try app.autoMigrate().wait()
 
     // register routes
     try routes(app)
 }
+
+//docker run --name postgresjusttalk -e POSTGRES_DB=justtalk_database \
+//  -e POSTGRES_USER=vapor_username \
+//  -e POSTGRES_PASSWORD=vapor_password \
+//  -p 5432:5432 -d postgres
+
+//docker run --name postgresjusttalktest -e POSTGRES_DB=justtalktest_database \
+//  -e POSTGRES_USER=vapor_username \
+//  -e POSTGRES_PASSWORD=vapor_password \
+//  -p 5433:5432 -d postgres
