@@ -52,19 +52,5 @@ final class PhoneTests: XCTestCase {
             XCTAssertEqual(data.isNumberValid, isValid, file: file, line: line)
         })
     }
-    
-    //MARK: - Helper
-                     
-    func getPhoneURI() -> String {
-        return "api/phones/validate"
-    }
-    
-    func anyInvalidPhone() -> String {
-        return "12sd33f"
-    }
-    
-    func anyvalidPhone() -> String {
-        return "1234567"
-    }
-    
+
 }

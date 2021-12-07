@@ -35,8 +35,13 @@ struct PhonesController: RouteCollection {
             .first()
             .unwrap(or: PhoneError.noExisting)
             .flatMapError { error in
-            let newPhone = Phone(number: phone.number)
-            return newPhone.save(on: req.db).map { return newPhone }
+                let newPhone = Phone(number: phone.number)
+                return newPhone.save(on: req.db).flatMap {
+                    let verificationCode = VerificationCode(code: generateVerificationCode(), phoneID: newPhone.id!)
+                    return verificationCode.save(on: req.db).map {
+                        return newPhone
+                    }
+                }
             }.map {
                 let responseObject = PhoneResponse(isNumberValid: true, phoneNumber: $0.number)
                 return GenericResponse(data: responseObject)
@@ -46,6 +51,10 @@ struct PhonesController: RouteCollection {
     
     private func isValidNumber(_ number: String) -> Bool {
         return Int(number) != nil ? true : false
+    }
+    
+    private func generateVerificationCode() -> String {
+        return "1111"
     }
     
      

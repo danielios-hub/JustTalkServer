@@ -19,6 +19,8 @@ public func configure(_ app: Application) throws {
     ), as: .psql)
 
     app.migrations.add(CreatePhone())
+    app.migrations.add(CreateVerificationCode())
+    
     app.logger.logLevel = .debug
     try app.autoMigrate().wait()
 

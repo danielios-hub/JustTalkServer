@@ -18,6 +18,9 @@ final class Phone: Model {
     @Field(key: "number")
     var number: String
     
+    @Children(for: \.$phone)
+    var code: [VerificationCode]
+    
     init() {}
     
     init(id: UUID? = nil, number: String) {

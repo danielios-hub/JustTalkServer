@@ -11,5 +11,8 @@ func routes(_ app: Application) throws {
     }
 
     let phonesController = PhonesController()
+    let verifyCodeController = VerifyCodeController()
+    
     try app.register(collection: phonesController)
+    try app.register(collection: verifyCodeController)
 }
