@@ -19,7 +19,7 @@ struct VerifyCodeController: RouteCollection {
     func postValidateCode(_ req: Request) async throws -> GenericResponse<VerificationCode.Output> {
         let request = try req.content.decode(VerificationCode.Input.self)
         
-        guard isValidNumber(request.phone) else {
+        guard PhoneValidator.isValidNumber(request.phone) else {
             return createResponse(isCorrect: false, code: request.code)
         }
         
@@ -37,9 +37,5 @@ struct VerifyCodeController: RouteCollection {
     private func createResponse(isCorrect: Bool, code: String) -> GenericResponse<VerificationCode.Output> {
         let responseObject = VerificationCode.Output(isCodeCorrect: isCorrect, code: code)
         return GenericResponse(data: responseObject)
-    }
-
-    private func isValidNumber(_ number: String) -> Bool {
-        return Int(number) != nil ? true : false
     }
 }

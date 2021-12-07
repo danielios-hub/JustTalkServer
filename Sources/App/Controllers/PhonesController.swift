@@ -24,7 +24,7 @@ struct PhonesController: RouteCollection {
     func validatePhone(_ req: Request) async throws -> GenericResponse<Phone.Output> {
         let request = try req.content.decode(Phone.Input.self)
         
-        guard isValidNumber(request.number) else {
+        guard PhoneValidator.isValidNumber(request.number) else {
             return createResponse(isValid: false, number: request.number)
         }
         
@@ -35,7 +35,7 @@ struct PhonesController: RouteCollection {
         if phoneObject == nil {
             let newPhone = Phone(number: request.number)
             try await newPhone.save(on: req.db)
-            let verificationCode = VerificationCode(code: generateVerificationCode(), phoneID: newPhone.id!)
+            let verificationCode = VerificationCode(code: CodeGenerator.generateCode(), phoneID: newPhone.id!)
             try await verificationCode.save(on: req.db)
         }
         
@@ -48,16 +48,6 @@ struct PhonesController: RouteCollection {
         let responseObject = Phone.Output(isNumberValid: isValid, phoneNumber: number)
         return GenericResponse(data: responseObject)
     }
-    
-    private func isValidNumber(_ number: String) -> Bool {
-        return Int(number) != nil ? true : false
-    }
-    
-    private func generateVerificationCode() -> String {
-        return "1111"
-    }
-    
-     
 }
 
 enum PhoneError: Error {
