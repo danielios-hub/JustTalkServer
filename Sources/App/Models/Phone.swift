@@ -30,3 +30,18 @@ final class Phone: Model {
 }
 
 extension Phone: Content {}
+
+//MARK: - Input, Output
+
+extension Phone {
+    
+    struct Input: Content {
+        let number: String
+    }
+
+    struct Output: Content {
+        var isNumberValid: Bool
+        var phoneNumber: String
+    }
+    
+}

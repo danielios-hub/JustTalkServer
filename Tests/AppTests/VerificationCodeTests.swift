@@ -37,12 +37,12 @@ final class VerificationCodeTests: XCTestCase {
     }
     
     func assert(phone: String, code: String, isValid: Bool, file: StaticString = #file, line: UInt = #line) throws {
-        let requestPhone = PhoneRequest(number: phone)
+        let requestPhone = Phone.Input(number: phone)
         let requestCode = VerificationCode.Input(phone: phone, code: code)
         try assertThatCompleteWith(requestPhone: requestPhone, requestCode: requestCode, isValid: isValid)
     }
     
-    func assertThatCompleteWith(requestPhone: PhoneRequest, requestCode: VerificationCode.Input, isValid: Bool, file: StaticString = #file, line: UInt = #line) throws {
+    func assertThatCompleteWith(requestPhone: Phone.Input, requestCode: VerificationCode.Input, isValid: Bool, file: StaticString = #file, line: UInt = #line) throws {
         
         try app.test(.POST, getPhoneURI(), beforeRequest: { req in
             try req.content.encode(requestPhone)

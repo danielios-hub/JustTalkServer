@@ -21,8 +21,8 @@ struct PhonesController: RouteCollection {
         return try await Phone.query(on: req.db).all()
     }
    
-    func validatePhone(_ req: Request) async throws -> GenericResponse<PhoneResponse> {
-        let request = try req.content.decode(PhoneRequest.self)
+    func validatePhone(_ req: Request) async throws -> GenericResponse<Phone.Output> {
+        let request = try req.content.decode(Phone.Input.self)
         
         guard isValidNumber(request.number) else {
             return createResponse(isValid: false, number: request.number)
@@ -44,8 +44,8 @@ struct PhonesController: RouteCollection {
     
     //MARK: - Helpers
     
-    private func createResponse(isValid: Bool, number: String) -> GenericResponse<PhoneResponse> {
-        let responseObject = PhoneResponse(isNumberValid: isValid, phoneNumber: number)
+    private func createResponse(isValid: Bool, number: String) -> GenericResponse<Phone.Output> {
+        let responseObject = Phone.Output(isNumberValid: isValid, phoneNumber: number)
         return GenericResponse(data: responseObject)
     }
     
@@ -68,11 +68,11 @@ struct GenericResponse<T: Content>: Content {
     let data: T
 }
 
-struct PhoneRequest: Content {
-    let number: String
-}
-
-struct PhoneResponse: Content {
-    var isNumberValid: Bool
-    var phoneNumber: String
-}
+//struct PhoneRequest: Content {
+//    let number: String
+//}
+//
+//struct PhoneResponse: Content {
+//    var isNumberValid: Bool
+//    var phoneNumber: String
+//}
