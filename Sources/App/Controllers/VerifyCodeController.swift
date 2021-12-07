@@ -16,8 +16,8 @@ struct VerifyCodeController: RouteCollection {
         route.post("validate", use: postValidateCode)
     }
     
-    func postValidateCode(_ req: Request) async throws -> GenericResponse<VerifyCodeResponse> {
-        let request = try req.content.decode(VerifyCodeRequest.self)
+    func postValidateCode(_ req: Request) async throws -> GenericResponse<VerificationCode.Output> {
+        let request = try req.content.decode(VerificationCode.Input.self)
         
         guard isValidNumber(request.phone) else {
             return createResponse(isCorrect: false, code: request.code)
@@ -34,22 +34,12 @@ struct VerifyCodeController: RouteCollection {
         return createResponse(isCorrect: isCorrect, code: request.code)
     }
     
-    private func createResponse(isCorrect: Bool, code: String) -> GenericResponse<VerifyCodeResponse> {
-        let responseObject = VerifyCodeResponse(isCodeCorrect: isCorrect, code: code)
+    private func createResponse(isCorrect: Bool, code: String) -> GenericResponse<VerificationCode.Output> {
+        let responseObject = VerificationCode.Output(isCodeCorrect: isCorrect, code: code)
         return GenericResponse(data: responseObject)
     }
 
     private func isValidNumber(_ number: String) -> Bool {
         return Int(number) != nil ? true : false
     }
-}
-
-struct VerifyCodeRequest: Content {
-    var phone: String
-    var code: String
-}
-
-struct VerifyCodeResponse: Content {
-    var isCodeCorrect: Bool
-    var code: String
 }

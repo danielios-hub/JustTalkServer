@@ -36,3 +36,19 @@ final class VerificationCode: Model {
 }
 
 extension VerificationCode: Content {}
+
+//MARK: - Input, Output
+
+extension VerificationCode {
+    
+    struct Input: Content {
+        var phone: String
+        var code: String
+    }
+
+    struct Output: Content {
+        var isCodeCorrect: Bool
+        var code: String
+    }
+    
+}
