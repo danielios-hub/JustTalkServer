@@ -12,7 +12,7 @@ struct CreatePhone: Migration {
     func prepare(on database: Database) -> EventLoopFuture<Void> {
         database.schema(Phone.schema)
             .id()
-            .field("number", .string, .required)
+            .field(.number, .string, .required)
             .create()
     }
     

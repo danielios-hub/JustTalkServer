@@ -8,6 +8,10 @@
 import Vapor
 import Fluent
 
+extension FieldKey {
+    static var number: Self { "number" }
+}
+
 final class Phone: Model {
     
     static let schema = "phones"
@@ -15,7 +19,7 @@ final class Phone: Model {
     @ID
     var id: UUID?
     
-    @Field(key: "number")
+    @Field(key: .number)
     var number: String
     
     @Children(for: \.$phone)

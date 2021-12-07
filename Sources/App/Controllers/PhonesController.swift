@@ -67,12 +67,3 @@ enum PhoneError: Error {
 struct GenericResponse<T: Content>: Content {
     let data: T
 }
-
-//struct PhoneRequest: Content {
-//    let number: String
-//}
-//
-//struct PhoneResponse: Content {
-//    var isNumberValid: Bool
-//    var phoneNumber: String
-//}
