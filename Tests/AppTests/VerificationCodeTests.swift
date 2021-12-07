@@ -21,35 +21,25 @@ final class VerificationCodeTests: XCTestCase {
     }
     
     func test_verifyCode_withValidCodeafterVerifyPhone_shouldReturnSuccessully() throws {
-        let validPhone = anyvalidPhone()
-        let validCode = anyValidVerificationCode()
-        let requestPhone = PhoneRequest(number: validPhone)
-        let requestCode = VerifyCodeRequest(phone: validPhone, code: validCode)
-        try assertThatCompleteWith(requestPhone: requestPhone, requestCode: requestCode, isValid: true)
+        try assert(phone: anyvalidPhone(), code: anyValidVerificationCode(), isValid: true)
     }
     
     func test_verifyCode_withInvalidCodeafterVerifyPhone_shouldReturnSuccessullyWithInvalidCode() throws {
-        let validPhone = anyvalidPhone()
-        let invalidCode = anyInvalidVerificationCode()
-        let requestPhone = PhoneRequest(number: validPhone)
-        let requestCode = VerifyCodeRequest(phone: validPhone, code: invalidCode)
-        try assertThatCompleteWith(requestPhone: requestPhone, requestCode: requestCode, isValid: false)
+        try assert(phone: anyvalidPhone(), code: anyInvalidVerificationCode(), isValid: false)
     }
     
     func test_verifyCode_withNoExistingPhoneAndValidCode_shouldReturnSuccessullyWithInvalidCode() throws {
-        let invalidPhone = anyInvalidPhone()
-        let validCode = anyValidVerificationCode()
-        let requestPhone = PhoneRequest(number: invalidPhone)
-        let requestCode = VerifyCodeRequest(phone: invalidPhone, code: validCode)
-        try assertThatCompleteWith(requestPhone: requestPhone, requestCode: requestCode, isValid: false)
+        try assert(phone: anyInvalidPhone(), code: anyValidVerificationCode(), isValid: false)
     }
     
     func test_verifyCode_withNoExistingPhoneAndInvalidCode_shouldReturnSuccessullyWithInvalidCode() throws {
-        let invalidPhone = anyInvalidPhone()
-        let invalidCode = anyInvalidVerificationCode()
-        let requestPhone = PhoneRequest(number: invalidPhone)
-        let requestCode = VerifyCodeRequest(phone: invalidPhone, code: invalidCode)
-        try assertThatCompleteWith(requestPhone: requestPhone, requestCode: requestCode, isValid: false)
+        try assert(phone: anyInvalidPhone(), code: anyInvalidVerificationCode(), isValid: false)
+    }
+    
+    func assert(phone: String, code: String, isValid: Bool, file: StaticString = #file, line: UInt = #line) throws {
+        let requestPhone = PhoneRequest(number: phone)
+        let requestCode = VerifyCodeRequest(phone: phone, code: code)
+        try assertThatCompleteWith(requestPhone: requestPhone, requestCode: requestCode, isValid: isValid)
     }
     
     func assertThatCompleteWith(requestPhone: PhoneRequest, requestCode: VerifyCodeRequest, isValid: Bool, file: StaticString = #file, line: UInt = #line) throws {
