@@ -25,26 +25,28 @@ struct PhonesController: RouteCollection {
         let request = try req.content.decode(PhoneRequest.self)
         
         guard isValidNumber(request.number) else {
-            let responseObject = PhoneResponse(isNumberValid: false, phoneNumber: request.number)
-            return GenericResponse(data: responseObject)
+            return createResponse(isValid: false, number: request.number)
         }
         
         let phoneObject = try await Phone.query(on: req.db)
             .filter(\.$number == request.number)
             .first()
         
-        if let phoneObject = phoneObject {
-            let responseObject = PhoneResponse(isNumberValid: true, phoneNumber: phoneObject.number)
-            return GenericResponse(data: responseObject)
-        } else {
+        if phoneObject == nil {
             let newPhone = Phone(number: request.number)
             try await newPhone.save(on: req.db)
             let verificationCode = VerificationCode(code: generateVerificationCode(), phoneID: newPhone.id!)
             try await verificationCode.save(on: req.db)
-            let responseObject = PhoneResponse(isNumberValid: true, phoneNumber: request.number)
-            return GenericResponse(data: responseObject)
-            
         }
+        
+        return createResponse(isValid: true, number: request.number)
+    }
+    
+    //MARK: - Helpers
+    
+    private func createResponse(isValid: Bool, number: String) -> GenericResponse<PhoneResponse> {
+        let responseObject = PhoneResponse(isNumberValid: isValid, phoneNumber: number)
+        return GenericResponse(data: responseObject)
     }
     
     private func isValidNumber(_ number: String) -> Bool {
