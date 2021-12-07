@@ -20,21 +20,22 @@ struct VerifyCodeController: RouteCollection {
         let request = try req.content.decode(VerifyCodeRequest.self)
         
         guard isValidNumber(request.phone) else {
-            let responseObject = VerifyCodeResponse(isCodeCorrect: false, code: request.code)
-            let response = GenericResponse(data: responseObject)
-            return response
+            return createResponse(isCorrect: false, code: request.code)
         }
         
         guard let phone = try await Phone.query(on: req.db)
             .filter(\.$number == request.phone)
             .first() else {
-                let responseObject = VerifyCodeResponse(isCodeCorrect: false, code: request.code)
-                return GenericResponse(data: responseObject)
+                return createResponse(isCorrect: false, code: request.code)
         }
         
         let codes = try await phone.$code.get(on: req.db)
         let isCorrect = codes.first?.code == request.code
-        let responseObject = VerifyCodeResponse(isCodeCorrect: isCorrect, code: request.code)
+        return createResponse(isCorrect: isCorrect, code: request.code)
+    }
+    
+    private func createResponse(isCorrect: Bool, code: String) -> GenericResponse<VerifyCodeResponse> {
+        let responseObject = VerifyCodeResponse(isCodeCorrect: isCorrect, code: code)
         return GenericResponse(data: responseObject)
     }
 
