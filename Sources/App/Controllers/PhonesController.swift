@@ -17,36 +17,34 @@ struct PhonesController: RouteCollection {
         phonesRoute.get(use: getAllHandler)
     }
     
-    func getAllHandler(_ req: Request) -> EventLoopFuture<[Phone]> {
-        return Phone.query(on: req.db).all()
+    func getAllHandler(_ req: Request) async throws -> [Phone] {
+        return try await Phone.query(on: req.db).all()
     }
    
-    func validatePhone(_ req: Request) throws -> EventLoopFuture<GenericResponse<PhoneResponse>> {
-        let phone = try req.content.decode(PhoneRequest.self)
+    func validatePhone(_ req: Request) async throws -> GenericResponse<PhoneResponse> {
+        let request = try req.content.decode(PhoneRequest.self)
         
-        guard isValidNumber(phone.number) else {
-            let responseObject = PhoneResponse(isNumberValid: false, phoneNumber: phone.number)
-            let response = GenericResponse(data: responseObject)
-            return req.eventLoop.makeSucceededFuture(response)
+        guard isValidNumber(request.number) else {
+            let responseObject = PhoneResponse(isNumberValid: false, phoneNumber: request.number)
+            return GenericResponse(data: responseObject)
         }
         
-        return Phone.query(on: req.db)
-            .filter(\.$number == phone.number)
+        let phoneObject = try await Phone.query(on: req.db)
+            .filter(\.$number == request.number)
             .first()
-            .unwrap(or: PhoneError.noExisting)
-            .flatMapError { error in
-                let newPhone = Phone(number: phone.number)
-                return newPhone.save(on: req.db).flatMap {
-                    let verificationCode = VerificationCode(code: generateVerificationCode(), phoneID: newPhone.id!)
-                    return verificationCode.save(on: req.db).map {
-                        return newPhone
-                    }
-                }
-            }.map {
-                let responseObject = PhoneResponse(isNumberValid: true, phoneNumber: $0.number)
-                return GenericResponse(data: responseObject)
-            }
-
+        
+        if let phoneObject = phoneObject {
+            let responseObject = PhoneResponse(isNumberValid: true, phoneNumber: phoneObject.number)
+            return GenericResponse(data: responseObject)
+        } else {
+            let newPhone = Phone(number: request.number)
+            try await newPhone.save(on: req.db)
+            let verificationCode = VerificationCode(code: generateVerificationCode(), phoneID: newPhone.id!)
+            try await verificationCode.save(on: req.db)
+            let responseObject = PhoneResponse(isNumberValid: true, phoneNumber: request.number)
+            return GenericResponse(data: responseObject)
+            
+        }
     }
     
     private func isValidNumber(_ number: String) -> Bool {
