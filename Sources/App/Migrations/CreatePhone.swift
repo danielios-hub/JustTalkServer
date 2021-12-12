@@ -13,6 +13,7 @@ struct CreatePhone: Migration {
         database.schema(Phone.schema)
             .id()
             .field(.number, .string, .required)
+            .unique(on: .number)
             .create()
     }
     
