@@ -9,8 +9,8 @@
 import Fluent
 
 extension Phone {
-    static func create(number: String = "123456", on db: Database) throws -> Phone {
-        let phone =  Phone(number: number)
+    static func create(number: String = "123456", password: String = "1212", on db: Database) throws -> Phone {
+        let phone =  Phone(number: number, password: password)
         try phone.save(on: db).wait()
         return phone
     }

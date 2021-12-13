@@ -48,7 +48,7 @@ extension VerificationCode {
 
     struct Output: Content {
         var isCodeCorrect: Bool
-        var code: String
+        var token: Token?
     }
     
 }

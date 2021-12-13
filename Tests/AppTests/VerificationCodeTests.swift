@@ -48,15 +48,15 @@ final class VerificationCodeTests: XCTestCase {
             try req.content.encode(requestPhone)
         }, afterResponse: { response in
             XCTAssertEqual(response.status, .ok, file: file, line: line)
-            
-            try app.test(.POST, getVerifyCodeURI(), beforeRequest: { req in
-                try req.content.encode(requestCode)
+                      
+            try app.test(.POST, getLoginURI(), beforeRequest: { req in
+                req.headers.basicAuthorization = .init(username: requestCode.phone, password: requestCode.code)
             }, afterResponse: { response in
                 XCTAssertEqual(response.status, .ok, file: file, line: line)
                 let responseObject = try response.content.decode(GenericResponse<VerificationCode.Output>.self)
                 let data = responseObject.data
                 XCTAssertEqual(data.isCodeCorrect, isValid, file: file, line: line)
-                XCTAssertEqual(data.code, requestCode.code, file: file, line: line)
+                XCTAssertEqual(data.token != nil, data.isCodeCorrect, file: file, line: line)
             })
         })
     }
@@ -66,6 +66,10 @@ final class VerificationCodeTests: XCTestCase {
     
     func getVerifyCodeURI() -> String {
         return "api/code/validate"
+    }
+    
+    func getLoginURI() -> String {
+        return "api/login"
     }
     
     func anyInvalidVerificationCode() -> String {

@@ -33,9 +33,12 @@ struct PhonesController: RouteCollection {
             .first()
         
         if phoneObject == nil {
-            let newPhone = Phone(number: request.number)
+            let newCode = CodeGenerator.generateCode()
+            let hashCode = try Bcrypt.hash(newCode)
+            let newPhone = Phone(number: request.number, password: hashCode)
+            newPhone.password = hashCode
             try await newPhone.save(on: req.db)
-            let verificationCode = VerificationCode(code: CodeGenerator.generateCode(), phoneID: newPhone.id!)
+            let verificationCode = VerificationCode(code: newCode, phoneID: newPhone.id!)
             try await verificationCode.save(on: req.db)
         }
         
