@@ -15,3 +15,11 @@ extension Phone {
         return phone
     }
 }
+
+extension Token {
+    static func create(phone: Phone, on db: Database) throws -> Token {
+        let token = try Token.generate(for: phone)
+        try token.save(on: db).wait()
+        return token
+    }
+}

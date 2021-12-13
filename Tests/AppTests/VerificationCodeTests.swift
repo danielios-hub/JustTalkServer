@@ -61,6 +61,31 @@ final class VerificationCodeTests: XCTestCase {
         })
     }
     
+    func test_tokenValid_withNoToken_returnNotValid() throws {
+        try app.test(.GET, getTokenValidURI(), afterResponse: { response in
+            XCTAssertEqual(response.status, .unauthorized)
+        })
+    }
+    
+    func test_tokenValid_withInvalidToken_returnNotValid() throws {
+        try app.test(.GET, getTokenValidURI(), beforeRequest: { req in
+            req.headers.bearerAuthorization = .init(token: anyInvalidToken())
+        }, afterResponse: { response in
+            XCTAssertEqual(response.status, .unauthorized)
+        })
+    }
+    
+    func test_tokenValid_withValidToken_returnOK() throws {
+        let phone = try Phone.create(number: anyvalidPhone(), password: anyValidVerificationCode(), on: app.db)
+        let token = try Token.create(phone: phone, on: app.db)
+        
+        try app.test(.GET, getTokenValidURI(), beforeRequest: { req in
+            req.headers.bearerAuthorization = .init(token: token.value)
+        }, afterResponse: { response in
+            XCTAssertEqual(response.status, .ok)
+        })
+    }
+    
     
     //MARK: - Helpers
     
@@ -72,8 +97,16 @@ final class VerificationCodeTests: XCTestCase {
         return "api/login"
     }
     
+    func getTokenValidURI() -> String {
+        return "api/token/valid"
+    }
+    
     func anyInvalidVerificationCode() -> String {
         return "1234578"
+    }
+    
+    func anyInvalidToken() -> String {
+        return "df12Fcsdfsdf=="
     }
     
 }

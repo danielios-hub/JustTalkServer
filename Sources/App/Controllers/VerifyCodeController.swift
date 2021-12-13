@@ -15,16 +15,28 @@ struct VerifyCodeController: RouteCollection {
         
         route.post("validate", use: postValidateCode)
         
+        //Basic Auth
         let basicAuthMiddleware = Phone.authenticator()
-        //let guardAuthMiddleware = Phone.guardMiddleware()
         
         let loginRoute = routes.grouped("api", "login")
         let basicAuthGroup = loginRoute.grouped(
             basicAuthMiddleware
-            //guardAuthMiddleware
         )
         
         basicAuthGroup.post(use: loginHandler)
+        
+        
+        //Token Auth
+        let tokenAuthMiddleware = Token.authenticator()
+        let guardAuthMiddleware = Phone.guardMiddleware()
+        
+        let tokenRoute = routes.grouped("api", "token", "valid")
+        let tokenAuthGroup = tokenRoute.grouped(
+            tokenAuthMiddleware,
+            guardAuthMiddleware
+        )
+        
+        tokenAuthGroup.get(use: tokenValid)
     }
     
     func postValidateCode(_ req: Request) async throws -> GenericResponse<VerificationCode.Output> {
@@ -56,8 +68,12 @@ struct VerifyCodeController: RouteCollection {
         }
     }
     
+    func tokenValid(_ req: Request) throws -> HTTPStatus {
+        _ = try req.auth.require(Phone.self)
+        return .ok
+    }
+    
     private func createResponse(isCorrect: Bool, code: String) -> GenericResponse<VerificationCode.Output> {
-//        let responseObject = VerificationCode.Output(isCodeCorrect: isCorrect, code: code)
         let responseObject = VerificationCode.Output(isCodeCorrect: isCorrect)
         return GenericResponse(data: responseObject)
     }
