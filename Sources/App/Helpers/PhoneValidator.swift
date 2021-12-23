@@ -7,10 +7,12 @@
 
 import Foundation
 
-class PhoneValidator {
+public class PhoneValidator {
     
-    static func isValidNumber(_ number: String) -> Bool {
-        return Int(number) != nil ? true : false
+    public static func isValidNumber(_ number: String) -> Bool {
+        let phoneRegex = "^[0-9+]{0,1}+[0-9]{5,16}$"
+        let phoneTest = NSPredicate(format: "SELF MATCHES %@", phoneRegex)
+        return phoneTest.evaluate(with: number)
     }
     
 }

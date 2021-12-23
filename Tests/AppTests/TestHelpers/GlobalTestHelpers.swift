@@ -16,7 +16,7 @@ func anyInvalidPhone() -> String {
 }
 
 func anyvalidPhone() -> String {
-    return "1234567"
+    return "606646712"
 }
 
 func anyValidVerificationCode() -> String {
