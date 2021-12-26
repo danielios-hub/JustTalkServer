@@ -21,6 +21,7 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreatePhone())
     app.migrations.add(CreateVerificationCode())
     app.migrations.add(CreateToken())
+    app.migrations.add(CreateChat())
     
     app.logger.logLevel = .debug
     try app.autoMigrate().wait()
