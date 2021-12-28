@@ -11,10 +11,6 @@ import Fluent
 struct VerifyCodeController: RouteCollection {
     
     func boot(routes: RoutesBuilder) throws {
-        let route = routes.grouped("api", "code")
-        
-        route.post("validate", use: postValidateCode)
-        
         //Basic Auth
         let basicAuthMiddleware = Phone.authenticator()
         
@@ -24,7 +20,6 @@ struct VerifyCodeController: RouteCollection {
         )
         
         basicAuthGroup.post(use: loginHandler)
-        
         
         //Token Auth
         let tokenAuthMiddleware = Token.authenticator()
@@ -37,24 +32,6 @@ struct VerifyCodeController: RouteCollection {
         )
         
         tokenAuthGroup.get(use: tokenValid)
-    }
-    
-    func postValidateCode(_ req: Request) async throws -> GenericResponse<VerificationCode.Output> {
-        let request = try req.content.decode(VerificationCode.Input.self)
-        
-        guard PhoneValidator.isValidNumber(request.phone) else {
-            return createResponse(isCorrect: false, code: request.code)
-        }
-        
-        guard let phone = try await Phone.query(on: req.db)
-            .filter(\.$number == request.phone)
-            .first() else {
-                return createResponse(isCorrect: false, code: request.code)
-        }
-        
-        let codes = try await phone.$code.get(on: req.db)
-        let isCorrect = codes.first?.code == request.code
-        return createResponse(isCorrect: isCorrect, code: request.code)
     }
     
     func loginHandler(_ req: Request) async throws -> GenericResponse<VerificationCode.Output> {
@@ -72,6 +49,9 @@ struct VerifyCodeController: RouteCollection {
         _ = try req.auth.require(Phone.self)
         return .ok
     }
+    
+    
+    //MARK: - Helpers
     
     private func createResponse(isCorrect: Bool, code: String) -> GenericResponse<VerificationCode.Output> {
         let responseObject = VerificationCode.Output(isCodeCorrect: isCorrect)

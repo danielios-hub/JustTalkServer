@@ -12,7 +12,9 @@ func routes(_ app: Application) throws {
 
     let phonesController = PhonesController()
     let verifyCodeController = VerifyCodeController()
+    let chatsController = ChatsController()
     
     try app.register(collection: phonesController)
     try app.register(collection: verifyCodeController)
+    try app.register(collection: chatsController)
 }
