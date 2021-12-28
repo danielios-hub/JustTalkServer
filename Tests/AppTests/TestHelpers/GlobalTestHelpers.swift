@@ -11,6 +11,10 @@ func getPhoneURI() -> String {
     return "api/phones/validate"
 }
 
+func getLoginURI() -> String {
+    return "api/login"
+}
+
 func anyInvalidPhone() -> String {
     return "12sd33f"
 }

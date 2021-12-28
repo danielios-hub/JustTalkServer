@@ -29,6 +29,9 @@ final class Chat: Model, Content {
     @Field(key: .createdAt)
     var createdAt: Date
     
+    @Siblings(through: ChatUserPivot.self, from: \.$chat, to: \.$phone)
+    var participants: [Phone]
+    
     init() {}
     
     init(id: UUID? = nil, name: String, imageURL: String, createdAt: Date) {
@@ -36,5 +39,12 @@ final class Chat: Model, Content {
         self.name = name
         self.imageURL = imageURL
         self.createdAt = createdAt
+    }
+}
+
+extension Chat {
+    
+    struct Output: Content {
+        var chats: [Chat]
     }
 }

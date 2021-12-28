@@ -73,6 +73,9 @@ struct VerifyCodeController: RouteCollection {
         return .ok
     }
     
+    
+    //MARK: - Helpers
+    
     private func createResponse(isCorrect: Bool, code: String) -> GenericResponse<VerificationCode.Output> {
         let responseObject = VerificationCode.Output(isCodeCorrect: isCorrect)
         return GenericResponse(data: responseObject)

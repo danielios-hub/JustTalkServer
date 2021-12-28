@@ -29,6 +29,9 @@ final class Phone: Model {
     @Children(for: \.$phone)
     var code: [VerificationCode]
     
+    @Siblings(through: ChatUserPivot.self, from: \.$phone, to: \.$chat)
+    var chats: [Chat]
+    
     init() {}
     
     init(id: UUID? = nil, number: String, password: String) {

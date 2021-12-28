@@ -93,10 +93,6 @@ final class VerificationCodeTests: XCTestCase {
         return "api/code/validate"
     }
     
-    func getLoginURI() -> String {
-        return "api/login"
-    }
-    
     func getTokenValidURI() -> String {
         return "api/token/valid"
     }
