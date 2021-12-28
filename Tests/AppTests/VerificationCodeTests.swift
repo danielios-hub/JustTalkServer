@@ -89,10 +89,6 @@ final class VerificationCodeTests: XCTestCase {
     
     //MARK: - Helpers
     
-    func getVerifyCodeURI() -> String {
-        return "api/code/validate"
-    }
-    
     func getTokenValidURI() -> String {
         return "api/token/valid"
     }
