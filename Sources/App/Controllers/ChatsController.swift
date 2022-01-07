@@ -25,7 +25,7 @@ class ChatsController: RouteCollection {
             guardAuthMiddleware
         )
         
-        tokenAuthGroup.get(use: getChatsWithUser)
+        tokenAuthGroup.post(use: getChatsWithUser)
     }
     
     func getAll(_ req: Request) async throws -> [Chat] {

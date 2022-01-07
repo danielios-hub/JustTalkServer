@@ -64,7 +64,7 @@ class ChatTests: XCTestCase {
     
     func assertThatComplete(withChatIds expectedIds: [UUID], token: Token) throws {
         try app.test(
-            .GET,
+            .POST,
             getChatURI(),
             beforeRequest: { req in
                 req.headers.bearerAuthorization = .init(token: token.value)
