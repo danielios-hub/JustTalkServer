@@ -12,7 +12,7 @@ struct CreateToken: Migration {
         return database.schema(Token.schema)
             .id()
             .field(.value, .string, .required)
-            .field(.phoneID, .uuid, .required, .references(Phone.schema, .id, onDelete: .cascade))
+            .field(.userID, .uuid, .required, .references(User.schema, .id, onDelete: .cascade))
             .create()
     }
     

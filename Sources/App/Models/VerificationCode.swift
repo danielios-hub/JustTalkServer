@@ -10,7 +10,7 @@ import Fluent
 
 extension FieldKey {
     static var code: Self { "code" }
-    static var phoneID: Self { "phoneID" }
+    static var userID: Self { "userID" }
 }
 
 final class VerificationCode: Model {
@@ -23,15 +23,15 @@ final class VerificationCode: Model {
     @Field(key: .code)
     var code: String
     
-    @Parent(key: .phoneID)
-    var phone: Phone
+    @Parent(key: .userID)
+    var user: User
     
     init() {}
     
-    init(id: UUID? = nil, code: String, phoneID: Phone.IDValue) {
+    init(id: UUID? = nil, code: String, userID: User.IDValue) {
         self.id = id
         self.code = code
-        self.$phone.id = phoneID
+        self.$user.id = userID
     }
 }
 

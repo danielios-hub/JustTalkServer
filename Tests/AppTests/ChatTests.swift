@@ -30,7 +30,7 @@ class ChatTests: XCTestCase {
     }
     
     func test_withOnechat_twoParticipants_returnChatWithParticipants() throws {
-        let (phoneOne, phoneTwo) = try makePhones()
+        let (phoneOne, phoneTwo) = try makeUsers()
         let chatName = "Some chat name"
         let chat = try makeChat(with: chatName, participants: [phoneOne, phoneTwo])
         
@@ -47,16 +47,16 @@ class ChatTests: XCTestCase {
     }
     
     func test_getChat_fromUser_withOneChat_shouldReturnChat() throws {
-        let (phoneOne, phoneTwo) = try makePhones()
-        let tokenOne = try Token.create(phone: phoneOne, on: app.db)
+        let (phoneOne, phoneTwo) = try makeUsers()
+        let tokenOne = try Token.create(user: phoneOne, on: app.db)
 
         let chat = try makeChat(participants: [phoneOne, phoneTwo])
         try assertThatComplete(withChatIds: [chat.id!], token: tokenOne)
     }
     
     func test_getChat_fromUser_withOneChatFromAnotherUser_shouldNotReturnChat() throws {
-        let (phoneOne, phoneTwo) = try makePhones()
-        let tokenOne = try Token.create(phone: phoneOne, on: app.db)
+        let (phoneOne, phoneTwo) = try makeUsers()
+        let tokenOne = try Token.create(user: phoneOne, on: app.db)
         
         _ = try makeChat(participants: [phoneTwo])
         try assertThatComplete(withChatIds: [], token: tokenOne)
@@ -87,15 +87,15 @@ class ChatTests: XCTestCase {
     
     //MARK: - Helpers
     
-    private func makePhones() throws -> (Phone, Phone) {
-        let phoneOne = try Phone.create(on: app.db)
-        let phoneTwo = try Phone.create(number: "606645453", password: "1111", on: app.db)
-        return (phoneOne, phoneTwo)
+    private func makeUsers() throws -> (User, User) {
+        let userOne = try User.create(on: app.db)
+        let userTwo = try User.create(number: "606645453", password: "1111", on: app.db)
+        return (userOne, userTwo)
     }
     
-    private func makeChat(with chatName: String = "Some chat name", participants: [Phone]) throws -> Chat {
+    private func makeChat(with chatName: String = "Some chat name", participants: [User]) throws -> Chat {
         let participants = participants
-        return try Chat.create(name: chatName, phones: participants, on: app.db)
+        return try Chat.create(name: chatName, users: participants, on: app.db)
     }
 
     func getChatURI() -> String {

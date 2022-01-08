@@ -12,7 +12,7 @@ struct VerifyCodeController: RouteCollection {
     
     func boot(routes: RoutesBuilder) throws {
         //Basic Auth
-        let basicAuthMiddleware = Phone.authenticator()
+        let basicAuthMiddleware = User.authenticator()
         
         let loginRoute = routes.grouped("api", "login")
         let basicAuthGroup = loginRoute.grouped(
@@ -23,7 +23,7 @@ struct VerifyCodeController: RouteCollection {
         
         //Token Auth
         let tokenAuthMiddleware = Token.authenticator()
-        let guardAuthMiddleware = Phone.guardMiddleware()
+        let guardAuthMiddleware = User.guardMiddleware()
         
         let tokenRoute = routes.grouped("api", "token", "valid")
         let tokenAuthGroup = tokenRoute.grouped(
@@ -36,7 +36,7 @@ struct VerifyCodeController: RouteCollection {
     
     func loginHandler(_ req: Request) async throws -> GenericResponse<VerificationCode.Output> {
         do {
-            let phone = try req.auth.require(Phone.self)
+            let phone = try req.auth.require(User.self)
             let token = try Token.generate(for: phone)
             try await token.save(on: req.db)
             return createResponseToken(isCorrect: true, token: token)
@@ -46,7 +46,7 @@ struct VerifyCodeController: RouteCollection {
     }
     
     func tokenValid(_ req: Request) throws -> HTTPStatus {
-        _ = try req.auth.require(Phone.self)
+        _ = try req.auth.require(User.self)
         return .ok
     }
     

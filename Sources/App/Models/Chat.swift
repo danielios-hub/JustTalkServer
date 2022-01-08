@@ -29,8 +29,8 @@ final class Chat: Model, Content {
     @Field(key: .createdAt)
     var createdAt: Date
     
-    @Siblings(through: ChatUserPivot.self, from: \.$chat, to: \.$phone)
-    var participants: [Phone]
+    @Siblings(through: ChatUserPivot.self, from: \.$chat, to: \.$user)
+    var participants: [User]
     
     init() {}
     

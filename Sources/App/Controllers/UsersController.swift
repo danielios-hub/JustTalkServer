@@ -8,7 +8,7 @@
 import Vapor
 import Fluent
 
-struct PhonesController: RouteCollection {
+struct UsersController: RouteCollection {
     
     func boot(routes: RoutesBuilder) throws {
         let phonesRoute = routes.grouped("api", "phones")
@@ -17,28 +17,28 @@ struct PhonesController: RouteCollection {
         phonesRoute.get(use: getAllHandler)
     }
     
-    func getAllHandler(_ req: Request) async throws -> [Phone] {
-        return try await Phone.query(on: req.db).all()
+    func getAllHandler(_ req: Request) async throws -> [User] {
+        return try await User.query(on: req.db).all()
     }
    
-    func validatePhone(_ req: Request) async throws -> GenericResponse<Phone.Output> {
-        let request = try req.content.decode(Phone.Input.self)
+    func validatePhone(_ req: Request) async throws -> GenericResponse<User.Output> {
+        let request = try req.content.decode(User.Input.self)
         
         guard PhoneValidator.isValidNumber(request.number) else {
             return createResponse(isValid: false, number: request.number)
         }
         
-        let phoneObject = try await Phone.query(on: req.db)
-            .filter(\.$number == request.number)
+        let phoneObject = try await User.query(on: req.db)
+            .filter(\.$phoneNumber == request.number)
             .first()
         
         if phoneObject == nil {
             let newCode = CodeGenerator.generateCode()
             let hashCode = try Bcrypt.hash(newCode)
-            let newPhone = Phone(number: request.number, password: hashCode)
+            let newPhone = User(phoneNumber: request.number, password: hashCode)
             newPhone.password = hashCode
             try await newPhone.save(on: req.db)
-            let verificationCode = VerificationCode(code: newCode, phoneID: newPhone.id!)
+            let verificationCode = VerificationCode(code: newCode, userID: newPhone.id!)
             try await verificationCode.save(on: req.db)
         }
         
@@ -47,8 +47,8 @@ struct PhonesController: RouteCollection {
     
     //MARK: - Helpers
     
-    private func createResponse(isValid: Bool, number: String) -> GenericResponse<Phone.Output> {
-        let responseObject = Phone.Output(isNumberValid: isValid, phoneNumber: number)
+    private func createResponse(isValid: Bool, number: String) -> GenericResponse<User.Output> {
+        let responseObject = User.Output(isNumberValid: isValid, phoneNumber: number)
         return GenericResponse(data: responseObject)
     }
 }

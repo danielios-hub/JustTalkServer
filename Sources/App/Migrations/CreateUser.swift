@@ -7,18 +7,18 @@
 
 import Fluent
 
-struct CreatePhone: Migration {
+struct CreateUser: Migration {
     
     func prepare(on database: Database) -> EventLoopFuture<Void> {
-        database.schema(Phone.schema)
+        database.schema(User.schema)
             .id()
-            .field(.number, .string, .required)
+            .field(.phoneNumber, .string, .required)
             .field(.password, .string, .required)
-            .unique(on: .number)
+            .unique(on: .phoneNumber)
             .create()
     }
     
     func revert(on database: Database) -> EventLoopFuture<Void> {
-        database.schema(Phone.schema).delete()
+        database.schema(User.schema).delete()
     }
 }

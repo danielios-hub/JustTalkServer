@@ -37,12 +37,12 @@ final class VerificationCodeTests: XCTestCase {
     }
     
     func assert(phone: String, code: String, isValid: Bool, file: StaticString = #file, line: UInt = #line) throws {
-        let requestPhone = Phone.Input(number: phone)
+        let requestPhone = User.Input(number: phone)
         let requestCode = VerificationCode.Input(phone: phone, code: code)
         try assertThatCompleteWith(requestPhone: requestPhone, requestCode: requestCode, isValid: isValid)
     }
     
-    func assertThatCompleteWith(requestPhone: Phone.Input, requestCode: VerificationCode.Input, isValid: Bool, file: StaticString = #file, line: UInt = #line) throws {
+    func assertThatCompleteWith(requestPhone: User.Input, requestCode: VerificationCode.Input, isValid: Bool, file: StaticString = #file, line: UInt = #line) throws {
         
         try app.test(.POST, getPhoneURI(), beforeRequest: { req in
             try req.content.encode(requestPhone)
@@ -76,8 +76,8 @@ final class VerificationCodeTests: XCTestCase {
     }
     
     func test_tokenValid_withValidToken_returnOK() throws {
-        let phone = try Phone.create(number: anyvalidPhone(), password: anyValidVerificationCode(), on: app.db)
-        let token = try Token.create(phone: phone, on: app.db)
+        let user = try User.create(number: anyvalidPhone(), password: anyValidVerificationCode(), on: app.db)
+        let token = try Token.create(user: user, on: app.db)
         
         try app.test(.GET, getTokenValidURI(), beforeRequest: { req in
             req.headers.bearerAuthorization = .init(token: token.value)

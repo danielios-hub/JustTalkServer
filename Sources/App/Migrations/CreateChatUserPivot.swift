@@ -13,7 +13,7 @@ struct CreateChatUserPivot: Migration {
             .id()
             .field(.chatID, .uuid, .required,
                    .references(Chat.schema, .id, onDelete: .cascade))
-            .field(.phoneID, .uuid, .required, .references(Phone.schema, .id, onDelete: .cascade))
+            .field(.userID, .uuid, .required, .references(User.schema, .id, onDelete: .cascade))
             .create()
         
     }

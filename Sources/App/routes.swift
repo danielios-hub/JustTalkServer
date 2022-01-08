@@ -10,7 +10,7 @@ func routes(_ app: Application) throws {
         return "Hello, world!"
     }
 
-    let phonesController = PhonesController()
+    let phonesController = UsersController()
     let verifyCodeController = VerifyCodeController()
     let chatsController = ChatsController()
     

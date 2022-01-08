@@ -17,7 +17,7 @@ class ChatsController: RouteCollection {
         chatsRoute.post(use: createChat)
         
         let tokenAuthMiddleware = Token.authenticator()
-        let guardAuthMiddleware = Phone.guardMiddleware()
+        let guardAuthMiddleware = User.guardMiddleware()
         
         let tokenRoute = routes.grouped("api", "chat")
         let tokenAuthGroup = tokenRoute.grouped(
@@ -37,8 +37,8 @@ class ChatsController: RouteCollection {
     func createChat(_ req: Request) async throws -> Chat {
         let input = try req.content.decode(CreateChatInput.self)
         
-        let userOne = try await Phone.find(input.userID, on: req.db)!
-        let userTwo = try await Phone.find(input.userID2, on: req.db)!
+        let userOne = try await User.find(input.userID, on: req.db)!
+        let userTwo = try await User.find(input.userID2, on: req.db)!
         
         
         let chat = Chat(name: "Some chat name", imageURL: "", createdAt: Date())
@@ -52,9 +52,9 @@ class ChatsController: RouteCollection {
     }
     
     func getChatsWithUser(_ req: Request) async throws -> GenericResponse<Chat.Output> {
-        let phone = try req.auth.require(Phone.self)
+        let phone = try req.auth.require(User.self)
 
-        let phoneModel = try await Phone
+        let phoneModel = try await User
             .query(on: req.db)
             .filter(\.$id == phone.id!)
             .with(\.$chats)

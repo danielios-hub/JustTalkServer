@@ -9,43 +9,43 @@ import Vapor
 import Fluent
 
 extension FieldKey {
-    static var number: Self { "number" }
+    static var phoneNumber: Self { "phoneNumber" }
     static var password: Self { "password" }
 }
 
-final class Phone: Model {
+final class User: Model {
     
-    static let schema = "phones"
+    static let schema = "users"
     
     @ID
     var id: UUID?
     
-    @Field(key: .number)
-    var number: String
+    @Field(key: .phoneNumber)
+    var phoneNumber: String
     
     @Field(key: .password)
     var password: String
     
-    @Children(for: \.$phone)
+    @Children(for: \.$user)
     var code: [VerificationCode]
     
-    @Siblings(through: ChatUserPivot.self, from: \.$phone, to: \.$chat)
+    @Siblings(through: ChatUserPivot.self, from: \.$user, to: \.$chat)
     var chats: [Chat]
     
     init() {}
     
-    init(id: UUID? = nil, number: String, password: String) {
+    init(id: UUID? = nil, phoneNumber: String, password: String) {
         self.id = id
-        self.number = number
+        self.phoneNumber = phoneNumber
         self.password = password
     }
 }
 
-extension Phone: Content {}
+extension User: Content {}
 
 //MARK: - Input, Output
 
-extension Phone {
+extension User {
     
     struct Input: Content {
         let number: String
@@ -58,9 +58,9 @@ extension Phone {
     
 }
 
-extension Phone: ModelAuthenticatable {
-    static let usernameKey: KeyPath<Phone, Field<String>> = \Phone.$number
-    static let passwordHashKey: KeyPath<Phone, Field<String>> = \Phone.$password
+extension User: ModelAuthenticatable {
+    static let usernameKey: KeyPath<User, Field<String>> = \User.$phoneNumber
+    static let passwordHashKey: KeyPath<User, Field<String>> = \User.$password
     
     func verify(password: String) throws -> Bool {
         return try Bcrypt.verify(password, created: self.password)

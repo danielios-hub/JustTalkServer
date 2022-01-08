@@ -21,31 +21,31 @@ final class Token: Model, Content {
     @Field(key: .value)
     var value: String
     
-    @Parent(key: .phoneID)
-    var phone: Phone
+    @Parent(key: .userID)
+    var user: User
     
     init() {}
     
-    init(id: UUID? = nil, value: String, phoneID: Phone.IDValue) {
+    init(id: UUID? = nil, value: String, userID: User.IDValue) {
         self.id = id
         self.value = value
-        self.$phone.id = phoneID
+        self.$user.id = userID
     }
 }
 
 extension Token {
-    static func generate(for phone: Phone) throws -> Token {
+    static func generate(for user: User) throws -> Token {
         let random = [UInt8].random(count: 16).base64
-        return try Token(value: random, phoneID: phone.requireID())
+        return try Token(value: random, userID: user.requireID())
     }
 }
 
 extension Token: ModelTokenAuthenticatable {
     
     static let valueKey: KeyPath<Token, Field<String>> = \Token.$value
-    static let userKey: KeyPath<Token, Parent<User>> = \Token.$phone
+    static let userKey: KeyPath<Token, Parent<User>> = \Token.$user
     
-    typealias User = Phone
+    //typealias User = User
     
     var isValid: Bool { true }
 }

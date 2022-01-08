@@ -20,18 +20,18 @@ final class ChatUserPivot: Model {
     @Parent(key: .chatID)
     var chat: Chat
     
-    @Parent(key: .phoneID)
-    var phone: Phone
+    @Parent(key: .userID)
+    var user: User
     
     init() {}
     
     init(
         id: UUID? = nil,
         chat: Chat,
-        phone: Phone
+        user: User
     ) throws {
         self.id = id
         self.$chat.id = try chat.requireID()
-        self.$phone.id = try phone.requireID()
+        self.$user.id = try user.requireID()
     }
 }

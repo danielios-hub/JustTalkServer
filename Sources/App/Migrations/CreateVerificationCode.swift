@@ -13,8 +13,8 @@ struct CreateVerificationCode: Migration {
         database.schema(VerificationCode.schema)
             .id()
             .field(.code, .string, .required)
-            .field(.phoneID, .uuid, .required, .references(Phone.schema, .id))
-            .unique(on: .phoneID)
+            .field(.userID, .uuid, .required, .references(User.schema, .id))
+            .unique(on: .userID)
             .create()
     }
     

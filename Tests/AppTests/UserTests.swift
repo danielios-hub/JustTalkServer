@@ -8,7 +8,7 @@
 @testable import App
 import XCTVapor
 
-final class PhoneTests: XCTestCase {
+final class UserTests: XCTestCase {
     
     var app: Application!
     
@@ -23,30 +23,30 @@ final class PhoneTests: XCTestCase {
     
     func test_phoneValidate_withInvalidPhone_shouldReturnSuccessWithInvalidPhone() throws {
         let invalidPhone = anyInvalidPhone()
-        let request = Phone.Input(number: invalidPhone)
+        let request = User.Input(number: invalidPhone)
         try assertThatCompleteWith(request: request, isValid: false, number: invalidPhone)
     }
     
     func test_phoneValidate_withNonExistingPhone_shouldReturnSuccessWithValidPhone() throws {
         let validPhone = anyvalidPhone()
-        let request = Phone.Input(number: validPhone)
+        let request = User.Input(number: validPhone)
         try assertThatCompleteWith(request: request, isValid: true, number: validPhone)
     }
     
     func test_phoneValidate_withExistingPhone_shouldReturnSuccessWithValidPhone() throws {
         let validPhone = anyvalidPhone()
-        _ = try Phone.create(number: validPhone, on: app.db)
-        let request = Phone.Input(number: validPhone)
+        _ = try User.create(number: validPhone, on: app.db)
+        let request = User.Input(number: validPhone)
         
         try assertThatCompleteWith(request: request, isValid: true, number: validPhone)
     }
     
-    func assertThatCompleteWith(request: Phone.Input, isValid: Bool, number: String, file: StaticString = #file, line: UInt = #line) throws {
+    func assertThatCompleteWith(request: User.Input, isValid: Bool, number: String, file: StaticString = #file, line: UInt = #line) throws {
         try app.test(.POST, getPhoneURI(), beforeRequest: { req in
             try req.content.encode(request)
         }, afterResponse: { response in
             XCTAssertEqual(response.status, .ok, file: file, line: line)
-            let response = try response.content.decode(GenericResponse<Phone.Output>.self)
+            let response = try response.content.decode(GenericResponse<User.Output>.self)
             let data = response.data
             XCTAssertEqual(data.phoneNumber, number, file: file, line: line)
             XCTAssertEqual(data.isNumberValid, isValid, file: file, line: line)

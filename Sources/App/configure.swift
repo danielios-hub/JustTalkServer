@@ -18,7 +18,7 @@ public func configure(_ app: Application) throws {
         database: Environment.get("DATABASE_NAME") ?? databaseName
     ), as: .psql)
 
-    app.migrations.add(CreatePhone())
+    app.migrations.add(CreateUser())
     app.migrations.add(CreateVerificationCode())
     app.migrations.add(CreateToken())
     app.migrations.add(CreateChat())
