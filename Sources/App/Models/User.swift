@@ -13,7 +13,7 @@ extension FieldKey {
     static var password: Self { "password" }
 }
 
-final class User: Model {
+final class User: Model, Content {
     
     static let schema = "users"
     
@@ -40,8 +40,6 @@ final class User: Model {
         self.password = password
     }
 }
-
-extension User: Content {}
 
 //MARK: - Input, Output
 
