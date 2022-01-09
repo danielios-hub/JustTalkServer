@@ -48,3 +48,16 @@ final class Message: Model, Content {
         self.date = date
     }
 }
+
+extension Message: Equatable {
+    public static func == (lhs: Message, rhs: Message) -> Bool {
+        return lhs.id == rhs.id &&
+        lhs.text == rhs.text
+    }
+}
+
+extension Message {
+    struct OutputList: Content {
+        let messages: [Message]
+    }
+}

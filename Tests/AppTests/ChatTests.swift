@@ -30,9 +30,9 @@ class ChatTests: XCTestCase {
     }
     
     func test_withOnechat_twoParticipants_returnChatWithParticipants() throws {
-        let (phoneOne, phoneTwo) = try makeUsers()
+        let (phoneOne, phoneTwo) = try makeUsers(on: app.db)
         let chatName = "Some chat name"
-        let chat = try makeChat(with: chatName, participants: [phoneOne, phoneTwo])
+        let chat = try makeChat(with: chatName, participants: [phoneOne, phoneTwo], on: app.db)
         
         try app.test(.GET, getChatTestURI(), afterResponse: { response in
             XCTAssertEqual(response.status, .ok)
@@ -47,18 +47,18 @@ class ChatTests: XCTestCase {
     }
     
     func test_getChat_fromUser_withOneChat_shouldReturnChat() throws {
-        let (phoneOne, phoneTwo) = try makeUsers()
+        let (phoneOne, phoneTwo) = try makeUsers(on: app.db)
         let tokenOne = try Token.create(user: phoneOne, on: app.db)
 
-        let chat = try makeChat(participants: [phoneOne, phoneTwo])
+        let chat = try makeChat(participants: [phoneOne, phoneTwo], on: app.db)
         try assertThatComplete(withChatIds: [chat.id!], token: tokenOne)
     }
     
     func test_getChat_fromUser_withOneChatFromAnotherUser_shouldNotReturnChat() throws {
-        let (phoneOne, phoneTwo) = try makeUsers()
+        let (phoneOne, phoneTwo) = try makeUsers(on: app.db)
         let tokenOne = try Token.create(user: phoneOne, on: app.db)
         
-        _ = try makeChat(participants: [phoneTwo])
+        _ = try makeChat(participants: [phoneTwo], on: app.db)
         try assertThatComplete(withChatIds: [], token: tokenOne)
     }
     
@@ -87,17 +87,6 @@ class ChatTests: XCTestCase {
     
     //MARK: - Helpers
     
-    private func makeUsers() throws -> (User, User) {
-        let userOne = try User.create(on: app.db)
-        let userTwo = try User.create(number: "606645453", password: "1111", on: app.db)
-        return (userOne, userTwo)
-    }
-    
-    private func makeChat(with chatName: String = "Some chat name", participants: [User]) throws -> Chat {
-        let participants = participants
-        return try Chat.create(name: chatName, users: participants, on: app.db)
-    }
-
     func getChatURI() -> String {
         return "api/chat"
     }
