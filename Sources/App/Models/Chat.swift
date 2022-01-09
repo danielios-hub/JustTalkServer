@@ -32,6 +32,9 @@ final class Chat: Model, Content {
     @Siblings(through: ChatUserPivot.self, from: \.$chat, to: \.$user)
     var participants: [User]
     
+    @Children(for: \.$chat)
+    var messages: [Message]
+    
     init() {}
     
     init(id: UUID? = nil, name: String, imageURL: String, createdAt: Date) {

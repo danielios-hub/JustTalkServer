@@ -23,6 +23,7 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreateToken())
     app.migrations.add(CreateChat())
     app.migrations.add(CreateChatUserPivot())
+    app.migrations.add(CreateMessage())
     
     app.logger.logLevel = .debug
     try app.autoMigrate().wait()

@@ -59,4 +59,15 @@ enum PhoneError: Error {
 
 struct GenericResponse<T: Content>: Content {
     let data: T
+    var status: StatusResponse = .ok
+    
+    static func failure<T>(data: T) -> GenericResponse<T> {
+        let response = GenericResponse<T>(data: data, status: .failure)
+        return response
+    }
+}
+
+enum StatusResponse: Int, Content {
+    case ok = 0
+    case failure = 1
 }

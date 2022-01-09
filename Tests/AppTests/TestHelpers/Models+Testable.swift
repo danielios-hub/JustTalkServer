@@ -37,3 +37,11 @@ extension Chat {
         return chat
     }
 }
+
+extension Message {
+    static func make(text: String = "", date: Date = Date(), chat: Chat, user: User, on db: Database) throws -> Message {
+        let message = try Message(chat: chat, user: user, text: text, date: date)
+        try message.save(on: db).wait()
+        return message
+    }
+}
