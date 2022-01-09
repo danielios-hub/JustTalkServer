@@ -25,6 +25,9 @@ class MessagesController: RouteCollection {
         )
         
         tokenAuthGroup.post(use: getMessagesInChat)
+        
+        let sendRoute = tokenAuthGroup.grouped("send")
+        sendRoute.post(use: sendMessage)
     }
     
     //MARK: - Test
@@ -43,14 +46,41 @@ class MessagesController: RouteCollection {
         return createResponse(messages: messages)
     }
     
+    func sendMessage(_ req: Request) async throws -> GenericResponse<Message> {
+        let user = try req.auth.require(User.self)
+        let input = try req.content.decode(SendMessageInput.self)
+        let chat = try await Chat.find(input.chatID, on: req.db)
+        
+        guard let chat = chat else {
+            return createFailureResponse()
+        }
+        
+        let message = try Message(chat: chat, user: user, text: input.text, date: Date())
+        try await message.save(on: req.db)
+        return createResponseMessage(message)
+    }
+    
     //MARK: - Helpers
     
     private func createResponse(messages: [Message]?) -> GenericResponse<Message.OutputList> {
         let responseObject = Message.OutputList(messages: messages ?? [])
         return GenericResponse(data: responseObject)
     }
+    
+    private func createResponseMessage(_ message: Message) -> GenericResponse<Message> {
+        return GenericResponse(data: message)
+    }
+    
+    private func createFailureResponse() -> GenericResponse<Message> {
+        return GenericResponse<Message>.failure(data: Message())
+    }
 }
 
 struct GetMessagesInput: Content {
     var chatID: UUID
+}
+
+struct SendMessageInput: Content {
+    var chatID: UUID
+    var text: String
 }
