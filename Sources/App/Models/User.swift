@@ -54,6 +54,16 @@ extension User {
         var phoneNumber: String
     }
     
+    struct Public: Content {
+        let id: UUID
+        let phoneNumber: String
+        
+        init(from user: User) {
+            id = user.id!
+            phoneNumber = user.phoneNumber
+        }
+    }
+    
 }
 
 extension User: ModelAuthenticatable {

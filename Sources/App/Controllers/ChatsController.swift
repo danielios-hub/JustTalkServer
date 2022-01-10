@@ -57,7 +57,9 @@ class ChatsController: RouteCollection {
         let phoneModel = try await User
             .query(on: req.db)
             .filter(\.$id == phone.id!)
-            .with(\.$chats)
+            .with(\.$chats) {
+                $0.with(\.$participants)
+            }
             .first()
 
         return createResponse(chats: phoneModel?.chats)
@@ -66,7 +68,8 @@ class ChatsController: RouteCollection {
     //MARK: - Helpers
     
     private func createResponse(chats: [Chat]?) -> GenericResponse<Chat.Output> {
-        let responseObject = Chat.Output(chats: chats ?? [])
+        let chatsOutput = chats?.map(Chat.Public.init) ?? []
+        let responseObject = Chat.Output(chats: chatsOutput)
         return GenericResponse(data: responseObject)
     }
 }

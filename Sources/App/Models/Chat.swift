@@ -48,6 +48,22 @@ final class Chat: Model, Content {
 extension Chat {
     
     struct Output: Content {
-        var chats: [Chat]
+        var chats: [Public]
+    }
+    
+    struct Public: Content {
+        let id: UUID
+        let name: String
+        let imageURL: String
+        let createdAt: Date
+        let participants: [User.Public]
+        
+        init(from chat: Chat) {
+            id = chat.id!
+            name = chat.name
+            imageURL = chat.imageURL
+            createdAt = chat.createdAt
+            participants = chat.participants.map(User.Public.init)
+        }
     }
 }
