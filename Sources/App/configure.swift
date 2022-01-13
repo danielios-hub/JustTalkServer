@@ -30,6 +30,7 @@ public func configure(_ app: Application) throws {
 
     // register routes
     try routes(app)
+    sockets(app)
 }
 
 //docker run --name postgresjusttalk -e POSTGRES_DB=justtalk_database \
