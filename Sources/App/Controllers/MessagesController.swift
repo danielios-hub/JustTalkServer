@@ -57,10 +57,19 @@ class MessagesController: RouteCollection {
         
         let message = try Message(chat: chat, user: user, text: input.text, date: Date())
         try await message.save(on: req.db)
+        
+        let participants = try await chat.$participants.get(reload: true, on: req.db)
+        let participantsIDs = participants.compactMap { $0.id}
+        sendNotification(message: message, to: participantsIDs)
+        
         return createResponseMessage(message)
     }
     
     //MARK: - Helpers
+    
+    private func sendNotification(message: Message, to usersID: [UUID]) {
+        NotificationSocketsManager.shared.sendMessages([message], to: usersID)
+    }
     
     private func createResponse(messages: [Message]?) -> GenericResponse<Message.OutputList> {
         let responseObject = Message.OutputList(messages: messages ?? [])
