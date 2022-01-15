@@ -9,19 +9,20 @@ import Vapor
 import Fluent
 
 public func sockets(_ app: Application) {
-    app.webSocket("user-notifications") { req, ws in
+    app.webSocket("api", "user-notifications") { req, ws in
         debugPrint("ws trying to connect")
-        
-        guard let request = try? req.query.decode(SocketRequest.self),
+
+        guard let tokenValue = req.headers.bearerAuthorization?.token,
               let token = try? await Token.query(on: app.db)
-                            .filter(\.$value == request.token)
+                            .filter(\.$value == tokenValue)
                             .with(\.$user)
                             .first()
         else {
+            debugPrint("ws clossing not authenticated")
             _ = ws.close(code: .unacceptableData)
             return
         }
-        
+
         let user = token.user
         let userID = user.id!
         debugPrint("ws connected user \(user.phoneNumber)")
