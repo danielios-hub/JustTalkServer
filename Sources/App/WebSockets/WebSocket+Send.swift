@@ -17,4 +17,14 @@ extension WebSocket {
     
     send(str)
   }
+    
+    func send(_ message: SocketConnected) {
+      let encoder = JSONEncoder()
+      guard
+        let data = try? encoder.encode(message),
+        let str = String(data: data, encoding: .utf8)
+      else { return }
+      
+      send(str)
+    }
 }

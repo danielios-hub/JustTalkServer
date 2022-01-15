@@ -14,3 +14,7 @@ public struct SocketRequest: Codable {
 public struct SocketMessage: Codable {
     let chatMessages: [Message]
 }
+
+public struct SocketConnected: Codable {
+    let successfull: Bool
+}

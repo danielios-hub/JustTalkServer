@@ -23,6 +23,9 @@ class NotificationSocketsManager  {
     
     func insert(id: UUID, on ws: WebSocket) {
         connectedUsers[id] = ws
+        
+        let connectedMessage = SocketConnected(successfull: true)
+        sendEvent(.connected(connectedMessage), to: [id])
     }
     
     func sendMessage(_ message: Message, to userIDs: [UUID]) {
@@ -40,7 +43,31 @@ class NotificationSocketsManager  {
         }
     }
     
+    func sendEvent(_ event: WebSocketEvent, to userIDs: [UUID]) {
+        flush()
+        
+        switch event {
+        case .connected(let socketConnected):
+            for userID in userIDs {
+                if let channel = connectedUsers[userID] {
+                    channel.send(socketConnected)
+                }
+            }
+        case .message(let socketMessage):
+            for userID in userIDs {
+                if let channel = connectedUsers[userID] {
+                    channel.send(socketMessage)
+                }
+            }
+        }
+    }
+    
     func remove(id: UUID) {
         connectedUsers[id] = nil
     }
+}
+
+enum WebSocketEvent {
+    case connected(SocketConnected)
+    case message(SocketMessage)
 }
