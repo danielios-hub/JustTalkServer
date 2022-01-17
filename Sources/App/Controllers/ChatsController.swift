@@ -59,6 +59,7 @@ class ChatsController: RouteCollection {
             .filter(\.$id == phone.id!)
             .with(\.$chats) {
                 $0.with(\.$participants)
+                $0.with(\.$messages)
             }
             .first()
 

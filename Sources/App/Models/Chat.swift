@@ -57,13 +57,15 @@ extension Chat {
         let imageURL: String
         let createdAt: Date
         let participants: [User.Public]
-        
+        let lastMessage: String
+
         init(from chat: Chat) {
             id = chat.id!
             name = chat.name
             imageURL = chat.imageURL
             createdAt = chat.createdAt
             participants = chat.participants.map(User.Public.init)
+            lastMessage = chat.messages.last?.text ?? ""
         }
     }
 }
