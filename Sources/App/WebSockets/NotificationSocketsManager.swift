@@ -10,8 +10,8 @@ import Vapor
 class NotificationSocketsManager  {
     static var shared = NotificationSocketsManager()
     
-    // FIXME: - thread safe(use property wrapper
-    private var connectedUsers = [UUID: WebSocket]()
+    @ThreadSafe
+    private var connectedUsers: [UUID: WebSocket] = [:]
     
     private init() {}
     
