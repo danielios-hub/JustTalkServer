@@ -15,6 +15,17 @@ struct UsersController: RouteCollection {
         
         phonesRoute.post("validate", use: validatePhone)
         phonesRoute.get(use: getAllHandler)
+        
+        let usersRoute = routes.grouped("api", "user")
+        let tokenAuthMiddleware = Token.authenticator()
+        let userMiddleware = User.guardMiddleware()
+        
+        let tokenRoute = usersRoute.grouped(
+            tokenAuthMiddleware,
+            userMiddleware
+        )
+        
+        tokenRoute.post(use: editUserInfoHandler)
     }
     
     func getAllHandler(_ req: Request) async throws -> [User] {
@@ -43,6 +54,17 @@ struct UsersController: RouteCollection {
         }
         
         return createResponse(isValid: true, number: request.number)
+    }
+    
+    func editUserInfoHandler(_ req: Request) async throws -> GenericResponse<User.Public> {
+        let input = try req.content.decode(User.EditInfoInput.self)
+        let user = try req.auth.require(User.self)
+        
+        user.name = input.name
+        try await user.save(on: req.db)
+        
+        let response = User.Public(from: user)
+        return GenericResponse(data: response)
     }
     
     //MARK: - Helpers

@@ -71,6 +71,14 @@ extension User {
         }
     }
     
+    struct EditInfoInput: Content {
+        let name: String
+        
+        init(from user: User) {
+            self.name = user.name
+        }
+    }
+    
 }
 
 extension User: ModelAuthenticatable {

@@ -41,6 +41,25 @@ final class UserTests: XCTestCase {
         try assertThatCompleteWith(request: request, isValid: true, number: validPhone)
     }
     
+    func test_editInfo_withUserEmptyName_shouldUpdateName() throws {
+        let name = "a username"
+        let (user, token) = try makeUserToken(on: app.db)
+    
+        user.name = name
+        let input = User.EditInfoInput(from: user)
+        try app.test(.POST, userURI(), beforeRequest: { req in
+            try req.content.encode(input)
+            req.headers.bearerAuthorization = .init(token: token.value)
+        }, afterResponse: { req in
+            XCTAssertEqual(req.status, .ok)
+            
+            let user = try req.content.decode(GenericResponse<User.Public>.self).data
+            XCTAssertEqual(user.name, name)
+        })
+    }
+    
+    //MARK: - Helpers
+    
     func assertThatCompleteWith(request: User.Input, isValid: Bool, number: String, file: StaticString = #file, line: UInt = #line) throws {
         try app.test(.POST, getPhoneURI(), beforeRequest: { req in
             try req.content.encode(request)
@@ -51,6 +70,10 @@ final class UserTests: XCTestCase {
             XCTAssertEqual(data.phoneNumber, number, file: file, line: line)
             XCTAssertEqual(data.isNumberValid, isValid, file: file, line: line)
         })
+    }
+    
+    private func userURI() -> String {
+        return "api/user"
     }
 
 }
