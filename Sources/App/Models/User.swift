@@ -11,6 +11,7 @@ import Fluent
 extension FieldKey {
     static var phoneNumber: Self { "phoneNumber" }
     static var password: Self { "password" }
+    static var user_name: Self { "name" }
 }
 
 final class User: Model, Content {
@@ -26,6 +27,9 @@ final class User: Model, Content {
     @Field(key: .password)
     var password: String
     
+    @Field(key: .user_name)
+    var name: String
+    
     @Children(for: \.$user)
     var code: [VerificationCode]
     
@@ -34,10 +38,11 @@ final class User: Model, Content {
     
     init() {}
     
-    init(id: UUID? = nil, phoneNumber: String, password: String) {
+    init(id: UUID? = nil, phoneNumber: String, password: String, name: String = "") {
         self.id = id
         self.phoneNumber = phoneNumber
         self.password = password
+        self.name = name
     }
 }
 
@@ -57,10 +62,12 @@ extension User {
     struct Public: Content {
         let id: UUID
         let phoneNumber: String
+        let name: String
         
         init(from user: User) {
             id = user.id!
             phoneNumber = user.phoneNumber
+            name = user.name
         }
     }
     

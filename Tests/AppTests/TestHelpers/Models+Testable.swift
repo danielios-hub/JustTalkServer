@@ -10,8 +10,8 @@ import Fluent
 import Foundation
 
 extension User {
-    static func create(number: String = "123456", password: String = "1111", on db: Database) throws -> User {
-        let user =  User(phoneNumber: number, password: password)
+    static func create(number: String = "123456", password: String = "1111", name: String = "a name", on db: Database) throws -> User {
+        let user =  User(phoneNumber: number, password: password, name: name)
         try user.save(on: db).wait()
         return user
     }

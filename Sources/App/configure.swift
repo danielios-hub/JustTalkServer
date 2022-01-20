@@ -31,14 +31,40 @@ public func configure(_ app: Application) throws {
     // register routes
     try routes(app)
     sockets(app)
+    
+    #if DEBUG
+    createTestData(on: app.db)
+    #endif
 }
 
 //docker run --name postgresjusttalk -e POSTGRES_DB=justtalk_database \
 //  -e POSTGRES_USER=vapor_username \
 //  -e POSTGRES_PASSWORD=vapor_password \
 //  -p 5432:5432 -d postgres
-
+//;
 //docker run --name postgresjusttalktest -e POSTGRES_DB=justtalktest_database \
 //  -e POSTGRES_USER=vapor_username \
 //  -e POSTGRES_PASSWORD=vapor_password \
 //  -p 5433:5432 -d postgres
+
+#if DEBUG
+func createTestData(on db: Database) {
+    Task {
+        let users = try! await User.query(on: db).all()
+        
+        if users.isEmpty {
+            let user = User(phoneNumber: "606646733", password: "1111", name: "user one")
+            let anotherUser = User(phoneNumber: "606646734", password: "1111", name: "another user")
+            
+            try await user.save(on: db)
+            try await anotherUser.save(on: db)
+            
+            let chat = Chat(name: "Some chat name", imageURL: "", createdAt: Date())
+            try await chat.save(on: db)
+            
+            try await chat.$participants.attach(user, on: db)
+            try await chat.$participants.attach(anotherUser, on: db)
+        }
+    }
+}
+#endif

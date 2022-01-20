@@ -14,6 +14,7 @@ struct CreateUser: Migration {
             .id()
             .field(.phoneNumber, .string, .required)
             .field(.password, .string, .required)
+            .field(.user_name, .string)
             .unique(on: .phoneNumber)
             .create()
     }
