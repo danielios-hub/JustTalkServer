@@ -53,8 +53,10 @@ func createTestData(on db: Database) {
         let users = try! await User.query(on: db).all()
         
         if users.isEmpty {
-            let user = User(phoneNumber: "606646733", password: "1111", name: "user one")
-            let anotherUser = User(phoneNumber: "606646734", password: "1111", name: "another user")
+            let newCode = "1111"
+            let hashCode = try Bcrypt.hash(newCode)
+            let user = User(phoneNumber: "606646733", password: hashCode, name: "user one")
+            let anotherUser = User(phoneNumber: "606646734", password: hashCode, name: "another user")
             
             try await user.save(on: db)
             try await anotherUser.save(on: db)
