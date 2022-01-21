@@ -71,7 +71,7 @@ extension User {
         }
     }
     
-    struct EditInfoInput: Content {
+    struct UserInfoRequest: Content {
         let name: String
         
         init(from user: User) {

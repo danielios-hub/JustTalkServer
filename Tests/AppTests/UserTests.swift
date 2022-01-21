@@ -46,7 +46,7 @@ final class UserTests: XCTestCase {
         let (user, token) = try makeUserToken(on: app.db)
     
         user.name = name
-        let input = User.EditInfoInput(from: user)
+        let input = User.UserInfoRequest(from: user)
         try app.test(.POST, userURI(), beforeRequest: { req in
             try req.content.encode(input)
             req.headers.bearerAuthorization = .init(token: token.value)

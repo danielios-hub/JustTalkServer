@@ -57,7 +57,7 @@ struct UsersController: RouteCollection {
     }
     
     func editUserInfoHandler(_ req: Request) async throws -> GenericResponse<User.Public> {
-        let input = try req.content.decode(User.EditInfoInput.self)
+        let input = try req.content.decode(User.UserInfoRequest.self)
         let user = try req.auth.require(User.self)
         
         user.name = input.name
