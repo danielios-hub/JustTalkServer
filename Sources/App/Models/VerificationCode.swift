@@ -48,6 +48,7 @@ extension VerificationCode {
 
     struct Output: Content {
         var isCodeCorrect: Bool
+        var user: User.Public?
         var token: Token?
     }
     

@@ -36,12 +36,12 @@ struct VerifyCodeController: RouteCollection {
     
     func loginHandler(_ req: Request) async throws -> GenericResponse<VerificationCode.Output> {
         do {
-            let phone = try req.auth.require(User.self)
-            let token = try Token.generate(for: phone)
+            let user = try req.auth.require(User.self)
+            let token = try Token.generate(for: user)
             try await token.save(on: req.db)
-            return createResponseToken(isCorrect: true, token: token)
+            return createResponseToken(isCorrect: true, token: token, user: user)
         } catch {
-            return createResponseToken(isCorrect: false, token: nil)
+            return createResponseToken(isCorrect: false, token: nil, user: nil)
         }
     }
     
@@ -53,13 +53,9 @@ struct VerifyCodeController: RouteCollection {
     
     //MARK: - Helpers
     
-    private func createResponse(isCorrect: Bool, code: String) -> GenericResponse<VerificationCode.Output> {
-        let responseObject = VerificationCode.Output(isCodeCorrect: isCorrect)
-        return GenericResponse(data: responseObject)
-    }
-    
-    private func createResponseToken(isCorrect: Bool, token: Token?) -> GenericResponse<VerificationCode.Output> {
-        let responseObject = VerificationCode.Output(isCodeCorrect: isCorrect, token: token)
+    private func createResponseToken(isCorrect: Bool, token: Token?, user: User?) -> GenericResponse<VerificationCode.Output> {
+        let user = user != nil ? User.Public(from: user!) : nil
+        let responseObject = VerificationCode.Output(isCodeCorrect: isCorrect, user: user, token: token)
         return GenericResponse(data: responseObject)
     }
     
