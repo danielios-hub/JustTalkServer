@@ -10,9 +10,11 @@ import Foundation
 public class PhoneValidator {
     
     public static func isValidNumber(_ number: String) -> Bool {
-        let phoneRegex = "^[0-9+]{0,1}+[0-9]{5,16}$"
-        let phoneTest = NSPredicate(format: "SELF MATCHES %@", phoneRegex)
-        return phoneTest.evaluate(with: number)
+        return true
+        // FIXME: - NSPredicate format not available on linux
+//        let phoneRegex = "^[0-9+]{0,1}+[0-9]{5,16}$"
+//        let phoneTest = NSPredicate(format: "SELF MATCHES %@", phoneRegex)
+//        return phoneTest.evaluate(with: number)
     }
     
 }
