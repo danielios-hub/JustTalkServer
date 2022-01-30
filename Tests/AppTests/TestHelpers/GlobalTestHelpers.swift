@@ -31,14 +31,18 @@ func anyValidVerificationCode() -> String {
 
 func makeUsers(on db: Database) throws -> (User, User) {
     let userOne = try User.create(on: db)
-    let userTwo = try User.create(number: "606645453", password: "1111", on: db)
+    let userTwo = try makeUser(number: "606645453", on: db)
     return (userOne, userTwo)
 }
 
 func makeUserToken(on db: Database) throws -> (User, Token) {
-    let user = try User.create(number: "606645453", password: "1111", on: db)
+    let user = try makeUser(number: "606645453", on: db)
     let token = try Token.create(user: user, on: db)
     return (user, token)
+}
+
+func makeUser(number: String, password: String = "1111", on db: Database) throws -> User {
+    return try User.create(number: number, password: password, on: db)
 }
 
 func makeChat(with chatName: String = "Some chat name", participants: [User], on db: Database) throws -> Chat {

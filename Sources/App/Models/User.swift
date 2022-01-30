@@ -79,6 +79,14 @@ extension User {
         }
     }
     
+    struct ContactsRequest: Content {
+        let phones: [String]
+        
+        public init(phones: [String]) {
+            self.phones = phones
+        }
+    }
+    
 }
 
 extension User: ModelAuthenticatable {

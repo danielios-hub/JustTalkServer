@@ -26,6 +26,8 @@ struct UsersController: RouteCollection {
         )
         
         tokenRoute.post(use: editUserInfoHandler)
+        
+        tokenRoute.grouped("contacts").post(use: getUsersByPhone)
     }
     
     func getAllHandler(_ req: Request) async throws -> [User] {
@@ -67,10 +69,33 @@ struct UsersController: RouteCollection {
         return GenericResponse(data: response)
     }
     
+    func getUsersByPhone(_ req: Request) async throws -> GenericResponse<[User.Public]> {
+        let input = try req.content.decode(User.ContactsRequest.self)
+        let requestPhones = input.phones
+        
+        guard !requestPhones.isEmpty else {
+            return createResponse(users: [])
+        }
+
+        let users = try await User.query(on: req.db)
+            .group(.or) { group in
+            for phone in requestPhones {
+                group.filter(\.$phoneNumber == phone)
+            }
+        } .all()
+    
+        return createResponse(users: users)
+    }
+    
     //MARK: - Helpers
     
     private func createResponse(isValid: Bool, number: String) -> GenericResponse<User.Output> {
         let responseObject = User.Output(isNumberValid: isValid, phoneNumber: number)
+        return GenericResponse(data: responseObject)
+    }
+    
+    private func createResponse(users: [User]) -> GenericResponse<[User.Public]> {
+        let responseObject: [User.Public] = users.map { User.Public(from: $0) }
         return GenericResponse(data: responseObject)
     }
 }
