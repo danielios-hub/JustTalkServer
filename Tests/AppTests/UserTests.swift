@@ -62,66 +62,32 @@ final class UserTests: XCTestCase {
         let (_, token) = try makeUserToken(on: app.db)
         let input = User.ContactsRequest(phones: [])
         
-        try app.test(.POST, contactsURI(), beforeRequest: { req in
-            try req.content.encode(input)
-            req.headers.bearerAuthorization = .init(token: token.value)
-        }, afterResponse: { response in
-            XCTAssertEqual(response.status, .ok)
-            
-            let data = try response.content.decode(GenericResponse<[User.Public]>.self).data
-            XCTAssert(data.isEmpty)
-        })
-        
+        try assertThatCompleteWith(request: input, token: token, with: [])
     }
     
     func test_getUsersByPhone_withPhonesButNoMatches_returnEmptyList() throws {
         let ((_, token), _) = try makeCommonSetup(on: app)
         let input = User.ContactsRequest(phones: [anyvalidPhone()])
         
-        try app.test(.POST, contactsURI(), beforeRequest: { req in
-            try req.content.encode(input)
-            req.headers.bearerAuthorization = .init(token: token.value)
-        }, afterResponse: { response in
-            XCTAssertEqual(response.status, .ok)
-            
-            let data = try response.content.decode(GenericResponse<[User.Public]>.self).data
-            XCTAssert(data.isEmpty)
-        })
+        try assertThatCompleteWith(request: input, token: token, with: [])
     }
     
     func test_getUsersByPhone_withPhonesAndOneMatch_returnListWithMatchingContact() throws {
         let ((_, token), anotherUser) = try makeCommonSetup(on: app)
-        let input = User.ContactsRequest(phones: [anotherUser.phoneNumber])
+        let matchingPhones = [anotherUser.phoneNumber]
+        let input = User.ContactsRequest(phones: matchingPhones)
         
-        try app.test(.POST, contactsURI(), beforeRequest: { req in
-            try req.content.encode(input)
-            req.headers.bearerAuthorization = .init(token: token.value)
-        }, afterResponse: { response in
-            XCTAssertEqual(response.status, .ok)
-            
-            let data = try response.content.decode(GenericResponse<[User.Public]>.self).data
-            XCTAssertEqual(data.count, 1)
-        })
+        try assertThatCompleteWith(request: input, token: token, with: matchingPhones)
     }
     
     func test_getUsersByPhone_withPhonesAndMultipleMatches_returnListWithMatchingContacts() throws {
         let ((_, token), _) = try makeCommonSetup(on: app)
-        
         let allPhones = ["606646740", "606646741", "606646742", "606646743", "606646744"]
         let matchingPhones = ["606646741", "606646742", "606646744"]
-        
         try allPhones.forEach { _ = try makeUser(number: $0, on: app.db) }
         let input = User.ContactsRequest(phones: matchingPhones)
         
-        try app.test(.POST, contactsURI(), beforeRequest: { req in
-            try req.content.encode(input)
-            req.headers.bearerAuthorization = .init(token: token.value)
-        }, afterResponse: { response in
-            XCTAssertEqual(response.status, .ok)
-            
-            let data = try response.content.decode(GenericResponse<[User.Public]>.self).data
-            XCTAssertEqual(data.count, matchingPhones.count)
-        })
+        try assertThatCompleteWith(request: input, token: token, with: matchingPhones)
     }
     
     //MARK: - Helpers
@@ -132,7 +98,7 @@ final class UserTests: XCTestCase {
         return ((user, token), anotherUser)
     }
     
-    func assertThatCompleteWith(request: User.Input, isValid: Bool, number: String, file: StaticString = #file, line: UInt = #line) throws {
+    private func assertThatCompleteWith(request: User.Input, isValid: Bool, number: String, file: StaticString = #file, line: UInt = #line) throws {
         try app.test(.POST, getPhoneURI(), beforeRequest: { req in
             try req.content.encode(request)
         }, afterResponse: { response in
@@ -141,6 +107,22 @@ final class UserTests: XCTestCase {
             let data = response.data
             XCTAssertEqual(data.phoneNumber, number, file: file, line: line)
             XCTAssertEqual(data.isNumberValid, isValid, file: file, line: line)
+        })
+    }
+    
+    private func assertThatCompleteWith(request: User.ContactsRequest, token: Token, with expectedPhones: [String], file: StaticString = #file, line: UInt = #line) throws {
+        try app.test(.POST, contactsURI(), beforeRequest: { req in
+            try req.content.encode(request)
+            req.headers.bearerAuthorization = .init(token: token.value)
+        }, afterResponse: { response in
+            XCTAssertEqual(response.status, .ok)
+            
+            let data = try response.content.decode(GenericResponse<[User.Public]>.self).data
+            XCTAssertEqual(data.count, expectedPhones.count)
+            
+            for expectedPhone in expectedPhones {
+                XCTAssert(data.contains { $0.phoneNumber == expectedPhone }, "Expected \(expectedPhone) to be in \(data)")
+            }
         })
     }
     
