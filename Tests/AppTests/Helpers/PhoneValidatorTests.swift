@@ -20,7 +20,7 @@ class PhoneValidatorTests: XCTestCase {
     func test_isValidNumber_shouldReturnFalseWithInvalidNumbers() {
         let validNumbers = ["++1994423565", "606646733ab"]
         for number in validNumbers {
-            XCTAssertFalse(PhoneValidator.isValidNumber(number))
+            XCTAssertFalse(PhoneValidator.isValidNumber(number), "number \(number) should be invalid")
         }
     }
 

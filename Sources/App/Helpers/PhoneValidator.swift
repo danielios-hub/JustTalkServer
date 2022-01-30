@@ -9,12 +9,19 @@ import Foundation
 
 public class PhoneValidator {
     
+    private static var minimumLength: Int { 6 }
+    
     public static func isValidNumber(_ number: String) -> Bool {
-        return true
-        // FIXME: - NSPredicate format not available on linux
-//        let phoneRegex = "^[0-9+]{0,1}+[0-9]{5,16}$"
-//        let phoneTest = NSPredicate(format: "SELF MATCHES %@", phoneRegex)
-//        return phoneTest.evaluate(with: number)
+        let notValidCharacters = NSCharacterSet(charactersIn: "+0123456789").inverted
+        return number.rangeOfCharacter(from: notValidCharacters) == nil &&
+        number.count > minimumLength &&
+        number.numberOfOccurrences(of: "+") <= 1
     }
     
+}
+
+private extension String {
+    func numberOfOccurrences(of value: String) -> Int {
+        return max(self.components(separatedBy: value).count - 1, 0)
+    }
 }
