@@ -33,7 +33,7 @@ public func configure(_ app: Application) throws {
     sockets(app)
     
     #if DEBUG
-    createTestData(on: app.db)
+    createTestData(app)
     #endif
 }
 
@@ -48,8 +48,10 @@ public func configure(_ app: Application) throws {
 //  -p 5433:5432 -d postgres
 
 #if DEBUG
-func createTestData(on db: Database) {
+func createTestData(_ app: Application) {
+    guard app.environment != .testing else { return }
     Task {
+        let db = app.db
         let users = try! await User.query(on: db).all()
         
         if users.isEmpty {
