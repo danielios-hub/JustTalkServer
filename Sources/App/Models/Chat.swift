@@ -51,6 +51,10 @@ extension Chat {
         var chats: [Public]
     }
     
+    struct OptionalChat: Content {
+        let chat: Chat.Public?
+    }
+    
     struct Public: Content {
         let id: UUID
         let name: String

@@ -92,12 +92,6 @@ final class UserTests: XCTestCase {
     
     //MARK: - Helpers
     
-    private func makeCommonSetup(on app: Application) throws -> ((User, Token), User) {
-        let (user, anotherUser) = try makeUsers(on: app.db)
-        let token = try Token.create(user: user, on: app.db)
-        return ((user, token), anotherUser)
-    }
-    
     private func assertThatCompleteWith(request: User.Input, isValid: Bool, number: String, file: StaticString = #file, line: UInt = #line) throws {
         try app.test(.POST, getPhoneURI(), beforeRequest: { req in
             try req.content.encode(request)

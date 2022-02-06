@@ -29,6 +29,12 @@ func anyValidVerificationCode() -> String {
     return "1111"
 }
 
+func makeCommonSetup(on app: Application) throws -> ((User, Token), User) {
+    let (user, anotherUser) = try makeUsers(on: app.db)
+    let token = try Token.create(user: user, on: app.db)
+    return ((user, token), anotherUser)
+}
+
 func makeUsers(on db: Database) throws -> (User, User) {
     let userOne = try User.create(on: db)
     let userTwo = try makeUser(number: "606645453", on: db)

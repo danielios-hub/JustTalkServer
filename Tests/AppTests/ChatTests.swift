@@ -85,6 +85,63 @@ class ChatTests: XCTestCase {
         )
     }
     
+    func test_createChat_withWrongUserID_shouldReturnFailure() throws {
+        let ((_, token), _) = try makeCommonSetup(on: app)
+        let input = CreateChatInput(userID: UUID())
+        try app.test(
+            .POST,
+            getCreateChatURI(),
+            beforeRequest: { req in
+                req.headers.bearerAuthorization = .init(token: token.value)
+                try req.content.encode(input)
+            }, afterResponse: { response in
+                XCTAssertEqual(response.status, .ok)
+                let objectResponse = try response.content.decode(GenericResponse<Chat.OptionalChat>.self)
+                XCTAssertEqual(objectResponse.status, .failure)
+                XCTAssertNil(objectResponse.data.chat)
+            }
+        )
+    }
+    
+    func test_createChat_withNotExistingUserID_shouldReturnNewChat() throws {
+        let ((_, token), anotherUser) = try makeCommonSetup(on: app)
+        let input = CreateChatInput(userID: try anotherUser.requireID())
+        try app.test(
+            .POST,
+            getCreateChatURI(),
+            beforeRequest: { req in
+                req.headers.bearerAuthorization = .init(token: token.value)
+                try req.content.encode(input)
+            }, afterResponse: { response in
+                XCTAssertEqual(response.status, .ok)
+                let objectResponse = try response.content.decode(GenericResponse<Chat.OptionalChat>.self)
+                XCTAssertEqual(objectResponse.status, .ok)
+                XCTAssertNotNil(objectResponse.data.chat)
+            }
+        )
+    }
+    
+    func test_createChat_withExistingChatWithUserID_shouldReturnPreviousChat() throws {
+        let ((user, token), anotherUser) = try makeCommonSetup(on: app)
+        let previousChat = try makeChat(participants: [user, anotherUser], on: app.db)
+        
+        let input = CreateChatInput(userID: try anotherUser.requireID())
+        try app.test(
+            .POST,
+            getCreateChatURI(),
+            beforeRequest: { req in
+                req.headers.bearerAuthorization = .init(token: token.value)
+                try req.content.encode(input)
+            }, afterResponse: { response in
+                XCTAssertEqual(response.status, .ok)
+                let objectResponse = try response.content.decode(GenericResponse<Chat.OptionalChat>.self)
+                XCTAssertEqual(objectResponse.status, .ok)
+                XCTAssertNotNil(objectResponse.data.chat)
+                XCTAssertEqual(objectResponse.data.chat?.id, previousChat.id)
+            }
+        )
+    }
+    
     //MARK: - Helpers
     
     func getChatURI() -> String {
@@ -93,5 +150,9 @@ class ChatTests: XCTestCase {
     
     func getChatTestURI() -> String {
         return "api/chatTest"
+    }
+    
+    func getCreateChatURI() -> String {
+        return "\(getChatURI())/create"
     }
 }
