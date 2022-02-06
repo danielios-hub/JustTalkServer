@@ -45,32 +45,12 @@ class ChatsController: RouteCollection {
                 return createFailureResponse()
             }
             
-            let currentChats = try await user.$chats.get(on: req.db)
-            for chat in currentChats {
-                _ = try await chat.$participants.get(on: req.db)
-            }
-            
-            let existingChat = currentChats.filter { chat in
-                let participantsID = chat.participants.map { $0.id! }
-                return participantsID.contains { $0 == withUser.id! }
-            }.first
-            
-            if let existingChat = existingChat {
+            if let existingChat = try await searchExistingChat(user: user, withUser: withUser, on: req) {
                 _ = try await existingChat.$messages.get(on: req.db)
                 return createResponse(existingChat)
             }
                 
-            
-            let chat = Chat(name: "Some chat name", imageURL: "", createdAt: Date())
-            try await chat.save(on: req.db)
-            
-        
-            try await chat.$participants.attach(user, on: req.db)
-            try await chat.$participants.attach(withUser, on: req.db)
-            
-            _ = try await chat.$participants.get(on: req.db)
-            _ = try await chat.$messages.get(on: req.db)
-            
+            let chat = try await createNewChat(user: user, withUser: withUser, on: req)
             return createResponse(chat)
         } catch {
             return createFailureResponse()
@@ -107,6 +87,37 @@ class ChatsController: RouteCollection {
     
     private func createFailureResponse() -> GenericResponse<Chat.OptionalChat> {
         return GenericResponse<Chat.OptionalChat>.failure(data: Chat.OptionalChat(chat: nil))
+    }
+    
+    private func searchExistingChat(user: User, withUser: User, on req: Request) async throws -> Chat? {
+        let currentChats = try await user.$chats.get(on: req.db)
+        for chat in currentChats {
+            _ = try await chat.$participants.get(on: req.db)
+        }
+        
+        return currentChats.filter { chat in
+            let participantsID = chat.participants.map { $0.id! }
+            return participantsID.contains { $0 == withUser.id! }
+        }.first
+    }
+    
+    private func createNewChat(user: User, withUser: User, on req: Request, loadParticipants: Bool = true, loadMessages: Bool = true) async throws -> Chat {
+        let chat = Chat(name: "Some chat name", imageURL: "", createdAt: Date())
+        try await chat.save(on: req.db)
+        
+    
+        try await chat.$participants.attach(user, on: req.db)
+        try await chat.$participants.attach(withUser, on: req.db)
+        
+        if loadParticipants {
+            _ = try await chat.$participants.get(on: req.db)
+        }
+        
+        if loadMessages {
+            _ = try await chat.$messages.get(on: req.db)
+        }
+        
+        return chat
     }
 }
 
