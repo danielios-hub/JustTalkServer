@@ -38,8 +38,7 @@ class ChatsController: RouteCollection {
     func createChat(_ req: Request) async throws -> GenericResponse<Chat.OptionalChat> {
         do {
             let user = try req.auth.require(User.self)
-            let input = try req.content.decode(CreateChatInput.self)
-            let withUser = try await User.find(input.userID, on: req.db)
+            let input = try req.content.decode(CreateChatRequest.self)
             
             guard let withUser = try await User.find(input.userID, on: req.db) else {
                 return createFailureResponse()
@@ -47,41 +46,42 @@ class ChatsController: RouteCollection {
             
             if let existingChat = try await searchExistingChat(user: user, withUser: withUser, on: req) {
                 _ = try await existingChat.$messages.get(on: req.db)
-                return createResponse(existingChat)
+                return createResponse(existingChat, ownUserID: try user.requireID())
             }
                 
             let chat = try await createNewChat(user: user, withUser: withUser, on: req)
-            return createResponse(chat)
+            return createResponse(chat, ownUserID: try user.requireID())
         } catch {
             return createFailureResponse()
         }
     }
     
     func getChatsWithUser(_ req: Request) async throws -> GenericResponse<Chat.Output> {
-        let phone = try req.auth.require(User.self)
+        let user = try req.auth.require(User.self)
 
         let phoneModel = try await User
             .query(on: req.db)
-            .filter(\.$id == phone.id!)
+            .filter(\.$id == user.id!)
             .with(\.$chats) {
                 $0.with(\.$participants)
                 $0.with(\.$messages)
             }
             .first()
 
-        return createResponse(chats: phoneModel?.chats)
+        return createResponse(chats: phoneModel?.chats, ownUserID: try user.requireID())
     }
     
     //MARK: - Helpers
     
-    private func createResponse(chats: [Chat]?) -> GenericResponse<Chat.Output> {
-        let chatsOutput = chats?.map(Chat.Public.init) ?? []
+    private func createResponse(chats: [Chat]?, ownUserID: UUID) -> GenericResponse<Chat.Output> {
+        let chatsOutput = chats?.map { Chat.Public(from: $0, ownUserID: ownUserID) } ?? []
+        //let chatsOutput = chats?.map(Chat.Public.init) ?? []
         let responseObject = Chat.Output(chats: chatsOutput)
         return GenericResponse(data: responseObject)
     }
     
-    private func createResponse(_ chat: Chat) -> GenericResponse<Chat.OptionalChat> {
-        let publicChat = Chat.OptionalChat(chat: Chat.Public(from: chat))
+    private func createResponse(_ chat: Chat, ownUserID: UUID) -> GenericResponse<Chat.OptionalChat> {
+        let publicChat = Chat.OptionalChat(chat: Chat.Public(from: chat, ownUserID: ownUserID))
         return GenericResponse(data: publicChat)
     }
     
@@ -121,6 +121,6 @@ class ChatsController: RouteCollection {
     }
 }
 
-struct CreateChatInput: Content {
+struct CreateChatRequest: Content {
     var userID: UUID
 }

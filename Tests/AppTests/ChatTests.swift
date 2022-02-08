@@ -47,11 +47,10 @@ class ChatTests: XCTestCase {
     }
     
     func test_getChat_fromUser_withOneChat_shouldReturnChat() throws {
-        let (phoneOne, phoneTwo) = try makeUsers(on: app.db)
-        let tokenOne = try Token.create(user: phoneOne, on: app.db)
-
-        let chat = try makeChat(participants: [phoneOne, phoneTwo], on: app.db)
-        try assertThatComplete(withChatIds: [chat.id!], token: tokenOne)
+        let (user, token) = try makeUserToken(on: app.db)
+        let anotherUser = try makeUser(number: "606646712", password: "1111", name: "another username", on: app.db)
+        let chat = try makeChat(participants: [user, anotherUser], on: app.db)
+        try assertThatComplete(withChatIds: [chat.id!], expectedNames: [anotherUser.name], token: token)
     }
     
     func test_getChat_fromUser_withOneChatFromAnotherUser_shouldNotReturnChat() throws {
@@ -62,7 +61,7 @@ class ChatTests: XCTestCase {
         try assertThatComplete(withChatIds: [], token: tokenOne)
     }
     
-    func assertThatComplete(withChatIds expectedIds: [UUID], token: Token) throws {
+    func assertThatComplete(withChatIds expectedIds: [UUID], expectedNames: [String] = [], token: Token) throws {
         try app.test(
             .POST,
             getChatURI(),
@@ -81,27 +80,28 @@ class ChatTests: XCTestCase {
                     XCTAssertNotNil(chats.filter { $0.id == id })
                 }
                 
+                XCTAssertEqual(chats.map { $0.name }, expectedNames)
             }
         )
     }
     
     func test_createChat_withWrongUserID_shouldReturnFailure() throws {
         let ((_, token), _) = try makeCommonSetup(on: app)
-        let input = CreateChatInput(userID: UUID())
+        let input = CreateChatRequest(userID: UUID())
         try assertChatCreation(input: input, token: token, expectedStatusResponse: .failure, expectedChatID: nil)
     }
     
     func test_createChat_withExistingChatWithUserID_shouldReturnPreviousChat() throws {
         let ((user, token), anotherUser) = try makeCommonSetup(on: app)
         let previousChat = try makeChat(participants: [user, anotherUser], on: app.db)
-        let input = CreateChatInput(userID: try anotherUser.requireID())
+        let input = CreateChatRequest(userID: try anotherUser.requireID())
         
         try assertChatCreation(input: input, token: token, expectedStatusResponse: .ok, expectedChatID: previousChat.id)
     }
     
     func test_createChat_withNotExistingUserID_shouldReturnNewChat() throws {
         let ((_, token), anotherUser) = try makeCommonSetup(on: app)
-        let input = CreateChatInput(userID: try anotherUser.requireID())
+        let input = CreateChatRequest(userID: try anotherUser.requireID())
         try app.test(
             .POST,
             getCreateChatURI(),
@@ -117,7 +117,7 @@ class ChatTests: XCTestCase {
         )
     }
 
-    private func assertChatCreation(input: CreateChatInput, token: Token, expectedStatusResponse: StatusResponse, expectedChatID: UUID?, file: StaticString = #file, line: UInt = #line) throws {
+    private func assertChatCreation(input: CreateChatRequest, token: Token, expectedStatusResponse: StatusResponse, expectedChatID: UUID?, file: StaticString = #file, line: UInt = #line) throws {
         try app.test(
             .POST,
             getCreateChatURI(),

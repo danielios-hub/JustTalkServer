@@ -47,8 +47,8 @@ func makeUserToken(on db: Database) throws -> (User, Token) {
     return (user, token)
 }
 
-func makeUser(number: String, password: String = "1111", on db: Database) throws -> User {
-    return try User.create(number: number, password: password, on: db)
+func makeUser(number: String, password: String = "1111", name: String = "a name", on db: Database) throws -> User {
+    return try User.create(number: number, password: password, name: name, on: db)
 }
 
 func makeChat(with chatName: String = "Some chat name", participants: [User], on db: Database) throws -> Chat {

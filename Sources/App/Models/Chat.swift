@@ -52,7 +52,7 @@ extension Chat {
     }
     
     struct OptionalChat: Content {
-        let chat: Chat.Public?
+        let chat: Public?
     }
     
     struct Public: Content {
@@ -63,13 +63,20 @@ extension Chat {
         let participants: [User.Public]
         let lastMessage: String
 
-        init(from chat: Chat) {
+        init(from chat: Chat, ownUserID: UUID) {
             id = chat.id!
-            name = chat.name
             imageURL = chat.imageURL
             createdAt = chat.createdAt
             participants = chat.participants.map(User.Public.init)
             lastMessage = chat.messages.last?.text ?? ""
+            
+            let anotherParticipant = participants.first { $0.id != ownUserID }
+            
+            if let anotherName = anotherParticipant?.name {
+                name = anotherName
+            } else {
+                name = chat.name
+            }
         }
     }
 }
