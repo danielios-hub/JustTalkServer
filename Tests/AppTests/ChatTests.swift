@@ -50,7 +50,7 @@ class ChatTests: XCTestCase {
         let (user, token) = try makeUserToken(on: app.db)
         let anotherUser = try makeUser(number: "606646712", password: "1111", name: "another username", on: app.db)
         let chat = try makeChat(participants: [user, anotherUser], on: app.db)
-        try assertThatComplete(withChatIds: [chat.id!], expectedNames: [anotherUser.name], token: token)
+        try assertThatComplete(withChatIds: [chat.id!], expectedNames: [anotherUser.name], expectedImagesURL: [Constants.imageRelativeURL(with: anotherUser.image!)], token: token)
     }
     
     func test_getChat_fromUser_withOneChatFromAnotherUser_shouldNotReturnChat() throws {
@@ -61,7 +61,7 @@ class ChatTests: XCTestCase {
         try assertThatComplete(withChatIds: [], token: tokenOne)
     }
     
-    func assertThatComplete(withChatIds expectedIds: [UUID], expectedNames: [String] = [], token: Token) throws {
+    func assertThatComplete(withChatIds expectedIds: [UUID], expectedNames: Set<String> = [], expectedImagesURL: Set<String> = [], token: Token) throws {
         try app.test(
             .POST,
             getChatURI(),
@@ -80,7 +80,10 @@ class ChatTests: XCTestCase {
                     XCTAssertNotNil(chats.filter { $0.id == id })
                 }
                 
-                XCTAssertEqual(chats.map { $0.name }, expectedNames)
+                let receivedNames: Set<String> = Set(chats.map { $0.name })
+                let receivedImagesURL: Set<String> = Set(chats.map { $0.imageURL })
+                XCTAssertEqual(receivedNames, expectedNames)
+                XCTAssertEqual(receivedImagesURL, expectedImagesURL)
             }
         )
     }

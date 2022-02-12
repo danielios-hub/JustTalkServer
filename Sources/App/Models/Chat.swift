@@ -65,18 +65,14 @@ extension Chat {
 
         init(from chat: Chat, ownUserID: UUID) {
             id = chat.id!
-            imageURL = chat.imageURL
             createdAt = chat.createdAt
             participants = chat.participants.map(User.Public.init)
             lastMessage = chat.messages.last?.text ?? ""
             
             let anotherParticipant = participants.first { $0.id != ownUserID }
             
-            if let anotherName = anotherParticipant?.name {
-                name = anotherName
-            } else {
-                name = chat.name
-            }
+            name = anotherParticipant?.name ?? chat.name
+            imageURL = anotherParticipant?.imageURL ?? chat.imageURL
         }
     }
 }

@@ -75,7 +75,6 @@ class ChatsController: RouteCollection {
     
     private func createResponse(chats: [Chat]?, ownUserID: UUID) -> GenericResponse<Chat.Output> {
         let chatsOutput = chats?.map { Chat.Public(from: $0, ownUserID: ownUserID) } ?? []
-        //let chatsOutput = chats?.map(Chat.Public.init) ?? []
         let responseObject = Chat.Output(chats: chatsOutput)
         return GenericResponse(data: responseObject)
     }
