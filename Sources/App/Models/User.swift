@@ -12,6 +12,7 @@ extension FieldKey {
     static var phoneNumber: Self { "phoneNumber" }
     static var password: Self { "password" }
     static var user_name: Self { "name" }
+    static var user_image: Self { "image" }
 }
 
 final class User: Model, Content {
@@ -30,6 +31,9 @@ final class User: Model, Content {
     @Field(key: .user_name)
     var name: String
     
+    @OptionalField(key: .user_image)
+    var image: String?
+    
     @Children(for: \.$user)
     var code: [VerificationCode]
     
@@ -38,11 +42,12 @@ final class User: Model, Content {
     
     init() {}
     
-    init(id: UUID? = nil, phoneNumber: String, password: String, name: String = "") {
+    init(id: UUID? = nil, phoneNumber: String, password: String, name: String = "", image: String? = nil) {
         self.id = id
         self.phoneNumber = phoneNumber
         self.password = password
         self.name = name
+        self.image = image
     }
 }
 
@@ -63,11 +68,18 @@ extension User {
         let id: UUID
         let phoneNumber: String
         let name: String
+        let imageURL: String?
         
         init(from user: User) {
             id = user.id!
             phoneNumber = user.phoneNumber
             name = user.name
+            
+            if let imageName = user.image {
+                imageURL = Constants.imageRelativeURL(with: imageName)
+            } else {
+                imageURL = nil
+            }
         }
     }
     

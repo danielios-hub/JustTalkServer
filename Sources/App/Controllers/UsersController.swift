@@ -9,6 +9,11 @@ import Vapor
 import Fluent
 
 struct UsersController: RouteCollection {
+    let fileService: FileService
+    
+    init(fileService: FileService = FileServiceImpl.shared) {
+        self.fileService = fileService
+    }
     
     func boot(routes: RoutesBuilder) throws {
         let phonesRoute = routes.grouped("api", "phones")
@@ -20,14 +25,17 @@ struct UsersController: RouteCollection {
         let tokenAuthMiddleware = Token.authenticator()
         let userMiddleware = User.guardMiddleware()
         
-        let tokenRoute = usersRoute.grouped(
+        let protectedRoutes = usersRoute.grouped(
             tokenAuthMiddleware,
             userMiddleware
         )
         
-        tokenRoute.post(use: editUserInfoHandler)
-        
-        tokenRoute.grouped("contacts").post(use: getUsersByPhone)
+        protectedRoutes.post(use: editUserInfoHandler)
+        protectedRoutes.grouped("profilePicture")
+            .on(.POST,
+                body: .collect(maxSize: "10mb"),
+                use: editUserImageHandler)
+        protectedRoutes.grouped("contacts").post(use: getUsersByPhone)
     }
     
     func getAllHandler(_ req: Request) async throws -> [User] {
@@ -64,9 +72,29 @@ struct UsersController: RouteCollection {
         
         user.name = input.name
         try await user.save(on: req.db)
-        
-        let response = User.Public(from: user)
-        return GenericResponse(data: response)
+        return createResponse(with: user)
+    }
+    
+    func editUserImageHandler(_ req: Request) async throws -> GenericResponse<OptionalObject<User.Public>> {
+        do {
+            let input = try req.content.decode(ImageUploadData.self)
+            let user = try req.auth.require(User.self)
+            
+            let imageName = try getImageName(from: user)
+            let directory = req.application.directory.workingDirectory
+            let folderPath = Constants.imagesFolderURL(with:  directory)
+            let imagePath = Constants.imageURL(with: directory, imageName: imageName)
+            
+            try fileService.createDirectoryIfNeeded(at: folderPath)
+            try await req.fileio.writeFile(.init(data: input.data), at: imagePath)
+            
+            user.image = imageName
+            try await user.save(on: req.db)
+            return createResponse(with: user)
+        } catch let error {
+            print(error)
+            return createFailureResponse()
+        }
     }
     
     func getUsersByPhone(_ req: Request) async throws -> GenericResponse<[User.Public]> {
@@ -98,10 +126,40 @@ struct UsersController: RouteCollection {
         let responseObject: [User.Public] = users.map { User.Public(from: $0) }
         return GenericResponse(data: responseObject)
     }
+    
+    private func createResponse(with user: User) -> GenericResponse<User.Public> {
+        let response = User.Public(from: user)
+        return GenericResponse(data: response)
+    }
+    
+    private func createResponse(with user: User) -> GenericResponse<OptionalObject<User.Public>> {
+        let response = OptionalObject(object: User.Public(from: user))
+        return GenericResponse(data: response)
+    }
+    
+    private func createFailureResponse() -> GenericResponse<OptionalObject<User.Public>> {
+        return .failure(data: OptionalObject(object: nil))
+    }
+    
+    private func getImageName(from user: User) throws -> String {
+        if let name = user.image {
+            return name
+        } else {
+            return "\(try user.requireID())_\(UUID().uuidString).jpg"
+        }
+    }
 }
 
 enum PhoneError: Error {
     case noExisting
+}
+
+struct ImageUploadData: Content {
+    let data: Data
+}
+
+struct OptionalObject<T: Content>: Content {
+    let object: T?
 }
 
 struct GenericResponse<T: Content>: Content {

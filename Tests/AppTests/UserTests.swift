@@ -58,6 +58,42 @@ final class UserTests: XCTestCase {
         })
     }
     
+    func test_editUserImage_withNoToken_shouldReturnError() throws {
+        let input = ImageUploadData.init(data: Data("any data".utf8))
+        
+        try app.test(.POST, imagUserUploadURI(), beforeRequest: { req in
+            try req.content.encode(input)
+        }, afterResponse: { response in
+            XCTAssertEqual(response.status, .unauthorized)
+        })
+    }
+    
+    //TODO: - Image Validation
+//    func test_editUserImage_withInvalidData_shouldReturnFailure() throws {
+//        let (_, token) = try makeUserToken(on: app.db)
+//        let input = ImageUploadData.init(data: Data("any data".utf8))
+//
+//        try assertThatCompleteWith(request: input, token: token, expectedStatusResponse: .failure, expectedObjectNil: true)
+//    }
+    
+    func test_editUserImage_withValidDataAndUserWithNoImage_shouldReturnUpdatedUser() throws {
+        cleanImagesDirectory()
+        let (_, token) = try makeUserToken(on: app.db)
+        let input = try makeValidImageRequest()
+        
+        try assertThatCompleteWith(request: input, token: token, expectedStatusResponse: .ok, expectedObjectNil: false)
+    }
+    
+    func test_editUserImage_withValidDataAndUserWithExistingImage_shouldReturnUpdatedUser() throws {
+        cleanImagesDirectory()
+        let (user, token) = try makeUserToken(on: app.db)
+        user.image = "someImageName.jpg"
+        try user.save(on: app.db).wait()
+        let input = try makeValidImageRequest()
+        
+        try assertThatCompleteWith(request: input, token: token, expectedStatusResponse: .ok, expectedObjectNil: false)
+    }
+    
     func test_getUsersByPhone_withNoPhones_returnEmptyList() throws {
         let (_, token) = try makeUserToken(on: app.db)
         let input = User.ContactsRequest(phones: [])
@@ -120,12 +156,51 @@ final class UserTests: XCTestCase {
         })
     }
     
+    private func assertThatCompleteWith(
+        request: ImageUploadData,
+        token: Token?,
+        expectedStatusResponse: StatusResponse,
+        expectedObjectNil: Bool) throws {
+        try app.test(.POST, imagUserUploadURI(), beforeRequest: { req in
+            try req.content.encode(request)
+            if let token = token {
+                req.headers.bearerAuthorization = .init(token: token.value)
+            }
+        }, afterResponse: { response in
+            XCTAssertEqual(response.status, .ok)
+            let baseResponse = try response.content.decode(GenericResponse<OptionalObject<User.Public>>.self)
+            XCTAssertEqual(baseResponse.status, expectedStatusResponse)
+            XCTAssertEqual(baseResponse.data.object == nil, expectedObjectNil)
+            XCTAssertEqual(baseResponse.data.object?.imageURL == nil, expectedObjectNil)
+            cleanImagesDirectory()
+        })
+    }
+    
+    private func makeValidImageRequest() throws -> ImageUploadData {
+        let url = getExampleImageURL()
+        let imageData = try Data(contentsOf: url)
+        return ImageUploadData.init(data: imageData)
+    }
+    
+    private func cleanImagesDirectory() {
+        let folderImagesPath =  Constants.imagesFolderURL(with: app.directory.workingDirectory)
+        try? FileManager.default.removeItem(atPath: folderImagesPath)
+    }
+    
     private func userURI() -> String {
         return "api/user"
     }
     
     private func contactsURI() -> String {
         return "api/user/contacts"
+    }
+    
+    private func imagUserUploadURI() -> String {
+        return "api/user/profilePicture"
+    }
+    
+    private func getExampleImageURL() -> URL {
+        return URL(string: "https://www.cleverfiles.com/howto/wp-content/uploads/2018/03/minion.jpg")!
     }
 
 }
