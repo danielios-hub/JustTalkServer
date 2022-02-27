@@ -20,4 +20,5 @@ func routes(_ app: Application) throws {
     try app.register(collection: verifyCodeController)
     try app.register(collection: chatsController)
     try app.register(collection: messagesController)
+    try app.register(collection: staticFilesController)
 }
