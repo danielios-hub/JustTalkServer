@@ -77,7 +77,7 @@ struct UsersController: RouteCollection {
     
     func editUserImageHandler(_ req: Request) async throws -> GenericResponse<OptionalObject<User.Public>> {
         do {
-            let input = try req.content.decode(ImageUploadData.self)
+            let input = try req.content.decode(EditImageRequest.self)
             let user = try req.auth.require(User.self)
             
             let imageName = try getImageName(from: user)
@@ -154,7 +154,7 @@ enum PhoneError: Error {
     case noExisting
 }
 
-struct ImageUploadData: Content {
+struct EditImageRequest: Content {
     let data: Data
 }
 

@@ -59,7 +59,7 @@ final class UserTests: XCTestCase {
     }
     
     func test_editUserImage_withNoToken_shouldReturnError() throws {
-        let input = ImageUploadData.init(data: Data("any data".utf8))
+        let input = EditImageRequest.init(data: Data("any data".utf8))
         
         try app.test(.POST, imagUserUploadURI(), beforeRequest: { req in
             try req.content.encode(input)
@@ -157,7 +157,7 @@ final class UserTests: XCTestCase {
     }
     
     private func assertThatCompleteWith(
-        request: ImageUploadData,
+        request: EditImageRequest,
         token: Token?,
         expectedStatusResponse: StatusResponse,
         expectedObjectNil: Bool) throws {
@@ -176,10 +176,10 @@ final class UserTests: XCTestCase {
         })
     }
     
-    private func makeValidImageRequest() throws -> ImageUploadData {
+    private func makeValidImageRequest() throws -> EditImageRequest {
         let url = getExampleImageURL()
         let imageData = try Data(contentsOf: url)
-        return ImageUploadData.init(data: imageData)
+        return EditImageRequest.init(data: imageData)
     }
     
     private func cleanImagesDirectory() {

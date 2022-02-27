@@ -76,7 +76,7 @@ extension User {
             name = user.name
             
             if let imageName = user.image {
-                imageURL = Constants.imageRelativeURL(with: imageName)
+                imageURL = Constants.imageAbsoluteURL(with: imageName)
             } else {
                 imageURL = nil
             }

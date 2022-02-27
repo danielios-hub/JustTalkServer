@@ -50,7 +50,7 @@ class ChatTests: XCTestCase {
         let (user, token) = try makeUserToken(on: app.db)
         let anotherUser = try makeUser(number: "606646712", password: "1111", name: "another username", on: app.db)
         let chat = try makeChat(participants: [user, anotherUser], on: app.db)
-        try assertThatComplete(withChatIds: [chat.id!], expectedNames: [anotherUser.name], expectedImagesURL: [Constants.imageRelativeURL(with: anotherUser.image!)], token: token)
+        try assertThatComplete(withChatIds: [chat.id!], expectedNames: [anotherUser.name], expectedImagesURL: [Constants.imageAbsoluteURL(with: anotherUser.image!)], token: token)
     }
     
     func test_getChat_fromUser_withOneChatFromAnotherUser_shouldNotReturnChat() throws {
