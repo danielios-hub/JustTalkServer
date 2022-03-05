@@ -8,26 +8,6 @@
 import Vapor
 import Fluent
 
-struct StaticFilesController: RouteCollection {
-    
-    func boot(routes: RoutesBuilder) throws {
-        routes.get(
-            "Images",
-             ":imageID",
-            use: serveImage
-        )
-    }
-    
-    func serveImage(_ req: Request) -> Response {
-        let id = req.parameters.get("imageID")!
-        print("id: \(id)")
-        let directory = req.application.directory.workingDirectory
-        let imagePath = Constants.imageURL(with: directory, imageName: id)
-        print("image path: \(imagePath)")
-        return req.fileio.streamFile(at: imagePath)
-    }
-}
-
 struct UsersController: RouteCollection {
     let fileService: FileService
     
@@ -104,13 +84,10 @@ struct UsersController: RouteCollection {
             let directory = req.application.directory.workingDirectory
             let folderPath = Constants.imagesFolderURL(with:  directory)
             let imagePath = Constants.imageURL(with: directory, imageName: imageName)
-            print("image name: \(imageName)")
-            print("userid: \(user.id!)")
             try fileService.createDirectoryIfNeeded(at: folderPath)
             try await req.fileio.writeFile(.init(data: input.data), at: imagePath)
             
             user.image = imageName
-            print("userimage: \(user.image!)")
             try await user.save(on: req.db)
             return createResponse(with: user)
         } catch let error {
