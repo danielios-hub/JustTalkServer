@@ -13,17 +13,17 @@ struct StaticFilesController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         routes.get(
             "Images",
-            ":imageID",
+             ":imageID",
             use: serveImage
         )
     }
     
     func serveImage(_ req: Request) -> Response {
         let id = req.parameters.get("imageID")!
-        
+        print("id: \(id)")
         let directory = req.application.directory.workingDirectory
         let imagePath = Constants.imageURL(with: directory, imageName: id)
-        
+        print("image path: \(imagePath)")
         return req.fileio.streamFile(at: imagePath)
     }
 }
