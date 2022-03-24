@@ -62,12 +62,14 @@ extension Chat {
         let createdAt: Date
         let participants: [User.Public]
         let lastMessage: String
+        let modificationDate: Date?
 
         init(from chat: Chat, ownUserID: UUID) {
             id = chat.id!
             createdAt = chat.createdAt
             participants = chat.participants.map(User.Public.init)
             lastMessage = chat.messages.last?.text ?? ""
+            modificationDate = chat.messages.last?.date
             
             let anotherParticipant = participants.first { $0.id != ownUserID }
             
