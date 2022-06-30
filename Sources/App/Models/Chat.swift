@@ -26,7 +26,7 @@ final class Chat: Model, Content {
     @Field(key: .imageURL)
     var imageURL: String
     
-    @Field(key: .createdAt)
+    @Field(key: .createdAt) // Bad Way to store date, use @Timestamp
     var createdAt: Date
     
     @Siblings(through: ChatUserPivot.self, from: \.$chat, to: \.$user)

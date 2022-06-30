@@ -138,10 +138,6 @@ class ChatTests: XCTestCase {
     
     //MARK: - Helpers
     
-    func getChatURI() -> String {
-        return "api/chat"
-    }
-    
     func getChatTestURI() -> String {
         return "api/chatTest"
     }

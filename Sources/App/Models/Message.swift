@@ -11,6 +11,7 @@ import Fluent
 extension FieldKey {
     static var text: Self { "text " }
     static var date: Self { "date" }
+    static var updatedAt: Self { "updated_at" }
 }
 
 final class Message: Model, Content {
@@ -29,8 +30,14 @@ final class Message: Model, Content {
     @Field(key: .text)
     var text: String
     
-    @Field(key: .date)
+    @Field(key: .date) // Bad Way to store date, use @Timestamp
     var date: Date
+    
+    @Timestamp(key: .createdAt, on: .create)
+    var createdAt: Date?
+
+    @Timestamp(key: .updatedAt, on: .update)
+    var updatedAt: Date?
     
     init() {}
     
@@ -46,6 +53,8 @@ final class Message: Model, Content {
         self.$user.id = try user.requireID()
         self.text = text
         self.date = date
+        self.createdAt = nil
+        self.updatedAt = nil
     }
 }
 

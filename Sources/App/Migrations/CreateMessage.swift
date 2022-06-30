@@ -16,7 +16,9 @@ struct CreateMessage: Migration {
             .field(.chatID, .uuid, .required, .references(Chat.schema, .id, onDelete: .cascade))
             .field(.userID, .uuid, .required, .references(User.schema, .id, onDelete: .cascade))
             .field(.text, .string, .required)
-            .field(.date, .date, .required)
+            .field(.date, .datetime, .required)
+            .field(.createdAt, .datetime, .required)
+            .field(.updatedAt, .datetime, .required)
             .create()
     }
     

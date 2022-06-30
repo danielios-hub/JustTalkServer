@@ -17,6 +17,10 @@ func getLoginURI() -> String {
     return "api/login"
 }
 
+func getChatURI() -> String {
+    return "api/chat"
+}
+
 func anyInvalidPhone() -> String {
     return "12sd33f"
 }

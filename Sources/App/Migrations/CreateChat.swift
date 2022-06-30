@@ -14,7 +14,7 @@ struct CreateChat: Migration {
             .id()
             .field(.name, .string, .required)
             .field(.imageURL, .string, .required)
-            .field(.createdAt, .date, .required)
+            .field(.createdAt, .datetime, .required)
             .create()
     }
     func revert(on database: Database) -> EventLoopFuture<Void> {

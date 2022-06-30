@@ -67,6 +67,46 @@ final class MessagesTests: XCTestCase {
         })
     }
     
+    func test_sendMessage_getChat_returnMessageWithDate() throws {
+        let (userOne, _, chat) = try makeSetup()
+        let tokenOne = try Token.create(user: userOne, on: app.db)
+        let input = SendMessageInput(chatID: chat.id!, text: "some new message")
+        
+        try app.test(.POST, messageSendURI(), beforeRequest: { req in
+            req.headers.bearerAuthorization = .init(token: tokenOne.value)
+            try req.content.encode(input)
+        }, afterResponse: { response in
+            XCTAssertEqual(response.status, .ok)
+            let responseData = try response.content.decode(GenericResponse<Message>.self)
+            XCTAssertEqual(responseData.status, .ok)
+            XCTAssertEqual(responseData.data.text, input.text)
+            XCTAssertNotNil(responseData.data.id)
+            
+            let date = responseData.data.date
+
+            try app.test(
+                .POST,
+                getChatURI(),
+                beforeRequest: { req in
+                    req.headers.bearerAuthorization = .init(token: tokenOne.value)
+                },
+                afterResponse: { newResponse in
+                    XCTAssertEqual(newResponse.status, .ok)
+
+                    let baseResponse = try newResponse.content.decode(GenericResponse<Chat.Output>.self)
+                    let newData = baseResponse.data
+                    let chats = newData.chats
+
+                    XCTAssertEqual(chats.count, 1)
+                    let newChat = chats[0]
+
+                    XCTAssertEqual(newChat.id, chat.id!)
+                    XCTAssertEqual(newChat.modificationDate!, date)
+                }
+            )
+        })
+    }
+    
     private func assertResult(messages: [Message], chat: Chat, user: User) throws {
         let tokenOne = try Token.create(user: user, on: app.db)
         let postModel = GetMessagesInput(chatID: chat.id!)
